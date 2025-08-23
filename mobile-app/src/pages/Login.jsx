@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, User, Mail, Phone, LogIn, Sparkles } from 'lucide-react';
+import { Shield, User, Mail, Phone, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Login = () => {
