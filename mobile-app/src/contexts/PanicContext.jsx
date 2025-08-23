@@ -122,21 +122,36 @@ export const PanicProvider = ({ children }) => {
         resolvedAt: null
       };
 
-      // Save to Firestore (real-time)
-      console.log('🚨 Creating SOS alert in Firestore...');
-      const alertId = await createSOSAlert(sosAlertData);
+      let alertId;
 
-      // Log notification
-      await createNotificationLog({
-        userId: firebaseUser.uid,
-        type: 'sos_alert_created',
-        alertId: alertId,
-        message: `SOS alert created: ${message || 'Emergency activated'}`,
-        metadata: {
-          location: currentLocation,
-          hasVideo: !!videoData.videoUrl
-        }
-      });
+      if (isLocalMode) {
+        // Save to localStorage for local mode
+        console.log('🚨 Creating SOS alert in local storage...');
+        alertId = `local_sos_${Date.now()}`;
+        const localAlerts = JSON.parse(localStorage.getItem('local_sos_alerts') || '[]');
+        localAlerts.unshift({ ...sosAlertData, id: alertId, timestamp: new Date() });
+        localStorage.setItem('local_sos_alerts', JSON.stringify(localAlerts));
+
+        // Update local state immediately
+        setPanicHistory(localAlerts);
+        setRealtimeAlerts(localAlerts);
+      } else {
+        // Save to Firestore (real-time)
+        console.log('🚨 Creating SOS alert in Firestore...');
+        alertId = await createSOSAlert(sosAlertData);
+
+        // Log notification (only for Firebase mode)
+        await createNotificationLog({
+          userId: firebaseUser.uid,
+          type: 'sos_alert_created',
+          alertId: alertId,
+          message: `SOS alert created: ${message || 'Emergency activated'}`,
+          metadata: {
+            location: currentLocation,
+            hasVideo: !!videoData.videoUrl
+          }
+        });
+      }
 
       // Send to backend services
       await sendPanicAlertToBackend({
