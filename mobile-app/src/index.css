@@ -238,13 +238,83 @@ body {
   box-shadow: 0 8px 32px rgba(251, 191, 36, 0.1);
 }
 
+/* Bottom navigation styles */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.h-safe-area-inset-bottom {
+  height: env(safe-area-inset-bottom);
+}
+
+/* Page bottom spacing for navigation */
+.pb-nav {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+}
+
+/* Enhanced animations for navigation */
+.nav-item-active {
+  animation: nav-bounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes nav-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+/* Backdrop blur support */
+@supports (backdrop-filter: blur(20px)) {
+  .backdrop-blur-supported {
+    backdrop-filter: blur(20px);
+  }
+}
+
+@supports not (backdrop-filter: blur(20px)) {
+  .backdrop-blur-supported {
+    background-color: rgba(255, 255, 255, 0.95);
+  }
+}
+
 /* Responsive text sizes */
 @media (max-width: 640px) {
   .responsive-text-lg {
     font-size: 1rem;
   }
-  
+
   .responsive-text-xl {
     font-size: 1.125rem;
+  }
+
+  /* Mobile navigation adjustments */
+  .bottom-nav-mobile {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Focus states for accessibility */
+.nav-button:focus {
+  outline: 2px solid #fbbf24;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .bottom-nav {
+    border-top: 2px solid #000;
+  }
+
+  .nav-item {
+    border: 1px solid transparent;
+  }
+
+  .nav-item-active {
+    border-color: #000;
   }
 }
