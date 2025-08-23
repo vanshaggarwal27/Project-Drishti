@@ -1,7 +1,12 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { useLocation } from '@/contexts/LocationContext';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  createDangerAlert,
+  subscribeToDangerAlerts,
+  createNotificationLog
+} from '@/lib/firebase';
 
 const DangerAlertContext = createContext();
 
@@ -15,87 +20,88 @@ export const useDangerAlert = () => {
 
 export const DangerAlertProvider = ({ children }) => {
   const [activeAlert, setActiveAlert] = useState(null);
-  const [alertHistory, setAlertHistory] = useState(() => {
-    const saved = localStorage.getItem('alertHistory');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [alertHistory, setAlertHistory] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
   const { location } = useLocation();
+  const { firebaseUser } = useAuth();
 
-  // WebSocket connection for real-time alerts
+  // Real-time Firebase subscription for danger alerts
   useEffect(() => {
-    connectToAlertService();
-    
+    if (!location) return;
+
+    console.log('🔄 Setting up real-time danger alerts subscription...');
+    setIsConnected(true);
+
+    const unsubscribe = subscribeToDangerAlerts(location, 5, (alerts) => {
+      console.log('⚠️ Received real-time danger alerts:', alerts.length);
+      setAlertHistory(alerts);
+
+      // Check for new active alerts
+      const newActiveAlert = alerts.find(alert =>
+        alert.active &&
+        (!activeAlert || alert.id !== activeAlert.id)
+      );
+
+      if (newActiveAlert) {
+        handleIncomingAlert(newActiveAlert);
+      }
+    });
+
+    // Simulate periodic danger alerts for demo (remove in production)
+    const demoInterval = setInterval(() => {
+      if (Math.random() > 0.9) { // 10% chance every 30 seconds
+        simulateIncomingAlert();
+      }
+    }, 30000);
+
     return () => {
-      disconnectFromAlertService();
-    };
-  }, []);
-
-  // Backend integration function - WebSocket connection
-  const connectToAlertService = () => {
-    try {
-      // Placeholder for WebSocket connection
-      // Replace with actual WebSocket endpoint
-      const wsUrl = 'wss://your-backend.com/alerts';
-      
-      // For demo purposes, simulate connection
-      setIsConnected(true);
-      
-      // Simulate receiving alerts every 30 seconds for demo
-      const interval = setInterval(() => {
-        if (Math.random() > 0.8) { // 20% chance of alert
-          simulateIncomingAlert();
-        }
-      }, 30000);
-
-      return () => clearInterval(interval);
-      
-      /* Actual WebSocket implementation:
-      const ws = new WebSocket(wsUrl);
-      
-      ws.onopen = () => {
-        setIsConnected(true);
-        console.log('Connected to alert service');
-      };
-      
-      ws.onmessage = (event) => {
-        const alertData = JSON.parse(event.data);
-        handleIncomingAlert(alertData);
-      };
-      
-      ws.onclose = () => {
-        setIsConnected(false);
-        console.log('Disconnected from alert service');
-      };
-      
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        setIsConnected(false);
-      };
-      */
-      
-    } catch (error) {
-      console.error('Failed to connect to alert service:', error);
+      console.log('🚫 Cleaning up danger alerts subscription');
+      unsubscribe();
+      clearInterval(demoInterval);
       setIsConnected(false);
+    };
+  }, [location, activeAlert]);
+
+  // Create a new danger alert (for testing or admin use)
+  const createNewDangerAlert = async (alertData) => {
+    try {
+      if (!firebaseUser?.uid) {
+        throw new Error('User must be authenticated to create alerts');
+      }
+
+      const alertId = await createDangerAlert({
+        ...alertData,
+        createdBy: firebaseUser.uid,
+        location: alertData.location || location
+      });
+
+      // Log the action
+      await createNotificationLog({
+        userId: firebaseUser.uid,
+        type: 'danger_alert_created',
+        alertId: alertId,
+        message: `Danger alert created: ${alertData.title}`,
+        metadata: alertData
+      });
+
+      console.log('✅ Danger alert created:', alertId);
+      return alertId;
+    } catch (error) {
+      console.error('❌ Error creating danger alert:', error);
+      throw error;
     }
   };
 
-  const disconnectFromAlertService = () => {
-    setIsConnected(false);
-    // Close WebSocket connection here
-  };
-
-  // Simulate incoming alert for demo
-  const simulateIncomingAlert = () => {
-    if (!location) return;
+  // Simulate incoming alert for demo (will create real Firestore entry)
+  const simulateIncomingAlert = async () => {
+    if (!location || !firebaseUser?.uid) return;
 
     const alertTypes = ['fire', 'violence', 'medical', 'evacuation'];
     const randomType = alertTypes[Math.floor(Math.random() * alertTypes.length)];
-    
+
     const mockAlert = {
-      id: Date.now().toString(),
       type: randomType,
-      severity: 'high',
+      severity: Math.random() > 0.5 ? 'high' : 'medium',
       title: `${randomType.charAt(0).toUpperCase() + randomType.slice(1)} Alert`,
       message: `Emergency situation reported in your area. Please stay alert and follow safety protocols.`,
       location: {
@@ -103,11 +109,20 @@ export const DangerAlertProvider = ({ children }) => {
         longitude: location.longitude + (Math.random() - 0.5) * 0.01
       },
       radius: 500, // meters
-      timestamp: new Date().toISOString(),
-      source: 'emergency_services'
+      source: 'emergency_services',
+      metadata: {
+        simulated: true,
+        generatedAt: new Date().toISOString()
+      }
     };
 
-    handleIncomingAlert(mockAlert);
+    try {
+      // Create real Firestore entry
+      const alertId = await createDangerAlert(mockAlert);
+      console.log('🚨 Simulated danger alert created in Firestore:', alertId);
+    } catch (error) {
+      console.error('❌ Error creating simulated alert:', error);
+    }
   };
 
   const handleIncomingAlert = (alertData) => {
@@ -124,15 +139,25 @@ export const DangerAlertProvider = ({ children }) => {
     // Check if user is within alert radius
     if (distance <= alertData.radius) {
       setActiveAlert(alertData);
-      
-      // Add to history
-      const updatedHistory = [alertData, ...alertHistory].slice(0, 50); // Keep last 50 alerts
-      setAlertHistory(updatedHistory);
-      localStorage.setItem('alertHistory', JSON.stringify(updatedHistory));
 
       // Trigger vibration if available
       if (navigator.vibrate) {
         navigator.vibrate([200, 100, 200, 100, 200]);
+      }
+
+      // Log notification received
+      if (firebaseUser?.uid) {
+        createNotificationLog({
+          userId: firebaseUser.uid,
+          type: 'danger_alert_received',
+          alertId: alertData.id,
+          message: `Danger alert received: ${alertData.title}`,
+          metadata: {
+            alertType: alertData.type,
+            severity: alertData.severity,
+            distance: Math.round(distance)
+          }
+        }).catch(console.error);
       }
 
       toast({
@@ -141,6 +166,8 @@ export const DangerAlertProvider = ({ children }) => {
         variant: "destructive",
         duration: 10000
       });
+
+      console.log('⚠️ Danger alert displayed to user:', alertData.title);
     }
   };
 
@@ -164,39 +191,57 @@ export const DangerAlertProvider = ({ children }) => {
     setActiveAlert(null);
   };
 
-  const clearAlertHistory = () => {
-    setAlertHistory([]);
-    localStorage.removeItem('alertHistory');
-    toast({
-      title: "Alert History Cleared",
-      description: "All alert history has been removed."
-    });
-  };
-
-  // Backend integration function - fetch alerts from API
-  const fetchAlertsFromAPI = async () => {
+  const clearAlertHistory = async () => {
     try {
-      const response = await fetch('/api/alerts/nearby', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        },
-        body: JSON.stringify({
-          location: location,
-          radius: 5000 // 5km radius
-        })
-      });
+      // Clear local state (Firestore data persists)
+      setAlertHistory([]);
+      setActiveAlert(null);
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch alerts');
+      // Log the action
+      if (firebaseUser?.uid) {
+        await createNotificationLog({
+          userId: firebaseUser.uid,
+          type: 'alert_history_cleared',
+          message: 'User cleared danger alert history from local view'
+        });
       }
 
-      const alerts = await response.json();
-      return alerts;
+      toast({
+        title: "Local History Cleared",
+        description: "Alert history cleared from local view. Data remains in Firebase."
+      });
+
+      console.log('✅ Local danger alert history cleared');
     } catch (error) {
-      console.error('Failed to fetch alerts from API:', error);
-      return [];
+      console.error('❌ Error clearing alert history:', error);
+      toast({
+        title: "Clear Failed",
+        description: "Failed to clear history. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Dismiss current active alert
+  const dismissAlert = async () => {
+    if (!activeAlert) return;
+
+    try {
+      setActiveAlert(null);
+
+      // Log dismissal
+      if (firebaseUser?.uid) {
+        await createNotificationLog({
+          userId: firebaseUser.uid,
+          type: 'danger_alert_dismissed',
+          alertId: activeAlert.id,
+          message: `User dismissed danger alert: ${activeAlert.title}`
+        });
+      }
+
+      console.log('✅ Danger alert dismissed by user');
+    } catch (error) {
+      console.error('❌ Error logging alert dismissal:', error);
     }
   };
 
@@ -206,7 +251,8 @@ export const DangerAlertProvider = ({ children }) => {
     isConnected,
     dismissAlert,
     clearAlertHistory,
-    fetchAlertsFromAPI
+    createNewDangerAlert,
+    simulateIncomingAlert
   };
 
   return (
