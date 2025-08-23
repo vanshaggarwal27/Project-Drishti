@@ -48,6 +48,15 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Monitor real-time connection status
+  useEffect(() => {
+    setRealtimeStatus({
+      sosAlerts: !!firebaseUser && panicHistory.length >= 0, // Connected if we have a user and history loaded
+      dangerAlerts: dangerAlertsConnected,
+      firebase: !!firebaseUser
+    });
+  }, [firebaseUser, panicHistory, dangerAlertsConnected]);
+
   const formatLastChecked = (date) => {
     const now = new Date();
     const diff = Math.floor((now - date) / 1000 / 60); // minutes
