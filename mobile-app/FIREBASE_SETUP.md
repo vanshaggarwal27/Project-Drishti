@@ -63,8 +63,27 @@ service cloud.firestore {
 - Allow authenticated users to create notification logs
 - Allow authenticated users to read danger alerts
 
-## Temporary Fallback
-Until you set up the rules, the app will use localStorage as a fallback for storing data locally. This ensures the app continues to work while you configure Firebase.
+## Automatic Fallback Mode
+If Firebase is not properly configured, the app automatically switches to **Local Storage Mode**:
+
+### What happens in Local Mode:
+- ✅ **App remains fully functional** - All features work normally
+- 💾 **Data stored locally** - User data and SOS alerts saved in browser storage
+- ⚠️ **No real-time sync** - Data doesn't sync across devices
+- 🔄 **Easy migration** - Data automatically syncs to Firebase once configured
+
+### Local Mode Indicators:
+- Login message shows "Running in local mode"
+- Console shows Firebase configuration warnings
+- Dashboard shows local storage status
 
 ## After Setup
-Once the rules are published, refresh your app and try logging in again. The Firebase permission errors should be resolved.
+1. **Enable Firebase Authentication** (Step 1) to fix `CONFIGURATION_NOT_FOUND` error
+2. **Configure Firestore Rules** (Step 2) to fix permission errors
+3. **Refresh your app** - Should automatically switch to Firebase mode
+4. **Re-login** to migrate data from local storage to Firebase
+
+## Troubleshooting
+- If you still see errors after setup, check the browser console for specific error messages
+- Make sure Anonymous authentication is **enabled** in Firebase Console
+- Verify the API key and project ID match your Firebase project
