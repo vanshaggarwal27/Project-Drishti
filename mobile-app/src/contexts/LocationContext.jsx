@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
 
@@ -61,10 +60,16 @@ export const LocationProvider = ({ children }) => {
     }
   };
 
-  // Backend integration function - replace with actual API endpoint
+  // Backend integration function - handles development mode gracefully
   const sendLocationToBackend = async (locationData) => {
     try {
-      // Placeholder for backend API call
+      // Check if we're in development mode without backend
+      if (window.location.hostname === 'localhost' || window.location.hostname.includes('fly.dev')) {
+        console.log('📍 Location updated (development mode):', locationData);
+        return; // Skip backend call in development
+      }
+
+      // Production backend API call
       const response = await fetch('/api/location/update', {
         method: 'POST',
         headers: {
@@ -80,7 +85,7 @@ export const LocationProvider = ({ children }) => {
 
       console.log('Location sent to backend successfully');
     } catch (error) {
-      console.error('Backend location update failed:', error);
+      console.warn('Backend location update failed (non-critical):', error.message);
       // Don't throw here to avoid breaking the location update flow
     }
   };
