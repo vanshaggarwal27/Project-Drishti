@@ -303,52 +303,6 @@ const Dashboard = () => {
             </div>
           </motion.section>
 
-          {/* Demo Mode Active - Prominent Display */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-gradient-to-r from-yellow-400/20 to-amber-400/20 backdrop-blur-sm rounded-3xl p-6 border-2 border-yellow-300/50"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-3">
-                <Eye className="w-6 h-6 text-yellow-600" />
-                Demo Mode Active
-              </h2>
-              <div className="w-4 h-4 bg-yellow-400 rounded-full animate-pulse"></div>
-            </div>
-
-            <div className="space-y-3">
-              <p className="text-gray-700 leading-relaxed">
-                SafeGuard is running in demonstration mode. All features are functional with simulated data:
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>SOS Emergency System Active</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Location Services Operational</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Real-time Alerts System</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <CheckCircle className="w-4 h-4 text-green-600" />
-                  <span>Emergency Video Recording</span>
-                </div>
-              </div>
-
-              <div className="mt-4 p-3 bg-white/60 rounded-xl border border-yellow-200">
-                <p className="text-xs text-gray-600">
-                  💡 <strong>Production Ready:</strong> Configure Firebase credentials and backend endpoints to enable real emergency services integration.
-                </p>
-              </div>
-            </div>
-          </motion.section>
 
         </div>
       </div>
