@@ -176,13 +176,22 @@ export const PanicProvider = ({ children }) => {
       });
 
       setIsActivated(true);
-      toast({
-        title: "🚨 SOS Alert Sent!",
-        description: "Your emergency alert has been saved to Firebase and emergency services notified.",
-        duration: 8000,
-      });
 
-      console.log('✅ SOS Alert successfully created in Firestore:', alertId);
+      if (isLocalMode) {
+        toast({
+          title: "🚨 SOS Alert Created!",
+          description: "Your emergency alert has been saved locally. Configure Firebase for real-time sync.",
+          duration: 8000,
+        });
+        console.log('✅ SOS Alert successfully created locally:', alertId);
+      } else {
+        toast({
+          title: "🚨 SOS Alert Sent!",
+          description: "Your emergency alert has been saved to Firebase and emergency services notified.",
+          duration: 8000,
+        });
+        console.log('✅ SOS Alert successfully created in Firestore:', alertId);
+      }
 
       // Auto-deactivate after 30 seconds (can be manually deactivated)
       setTimeout(() => {
