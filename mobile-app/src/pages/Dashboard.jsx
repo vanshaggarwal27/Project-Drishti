@@ -361,41 +361,33 @@ const Dashboard = () => {
             </div>
           </motion.section>
 
-          {/* User Info Card */}
+          {/* Navigation Guide */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-gradient-to-r from-yellow-400/10 to-amber-400/10 backdrop-blur-sm rounded-3xl p-6 border border-yellow-300/50"
+            className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 border border-gray-200"
           >
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Account Information</h2>
-            
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <User className="w-5 h-5 text-yellow-600" />
-                <div>
-                  <div className="font-medium text-gray-800">{userProfile?.name}</div>
-                  <div className="text-sm text-gray-600">Full Name</div>
-                </div>
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Quick Navigation</h2>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-3 bg-red-50 rounded-2xl border border-red-200">
+                <AlertTriangle className="w-8 h-8 text-red-600 mx-auto mb-2" />
+                <div className="font-medium text-gray-800 text-sm">SOS Alerts</div>
+                <div className="text-xs text-gray-600">View emergency notifications</div>
               </div>
-              
-              <div className="flex items-center gap-3">
-                <Smartphone className="w-5 h-5 text-yellow-600" />
-                <div>
-                  <div className="font-medium text-gray-800">{userProfile?.phone}</div>
-                  <div className="text-sm text-gray-600">Phone Number</div>
-                </div>
+
+              <div className="text-center p-3 bg-blue-50 rounded-2xl border border-blue-200">
+                <Activity className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                <div className="font-medium text-gray-800 text-sm">History</div>
+                <div className="text-xs text-gray-600">Check past emergency alerts</div>
               </div>
-              
-              <div className="flex items-center gap-3">
-                <Calendar className="w-5 h-5 text-yellow-600" />
-                <div>
-                  <div className="font-medium text-gray-800">
-                    {new Date(userProfile?.createdAt).toLocaleDateString()}
-                  </div>
-                  <div className="text-sm text-gray-600">Member Since</div>
-                </div>
-              </div>
+            </div>
+
+            <div className="mt-4 text-center">
+              <p className="text-xs text-gray-500">
+                Use the bottom navigation to access all features
+              </p>
             </div>
           </motion.section>
         </div>
