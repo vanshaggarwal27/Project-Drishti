@@ -83,7 +83,8 @@ const PanicButton = () => {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
-              className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center glass border-2 border-green-400"
+              className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg border-2 border-green-400"
+              style={{ backgroundColor: 'rgba(34, 197, 94, 0.9)', backdropFilter: 'blur(10px)' }}
             >
               <Check size={24} className="text-white" />
             </motion.div>
@@ -92,11 +93,12 @@ const PanicButton = () => {
               key="panic"
               onClick={handlePanicPress}
               disabled={isProcessing}
-              className={`w-16 h-16 bg-red-500 rounded-full flex items-center justify-center glass border-2 border-red-400 transition-all duration-300 ${
-                isProcessing ? 'cursor-not-allowed' : 'hover:scale-105'
+              className={`w-16 h-16 bg-red-500 rounded-full flex items-center justify-center shadow-xl border-2 border-red-400 transition-all duration-300 ${
+                isProcessing ? 'cursor-not-allowed opacity-70' : 'hover:scale-105 hover:shadow-2xl'
               } ${isActivated ? '' : 'panic-pulse'}`}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
+              style={{ backgroundColor: 'rgba(239, 68, 68, 0.95)', backdropFilter: 'blur(10px)' }}
+              whileHover={{ scale: isProcessing ? 1 : 1.1 }}
+              whileTap={{ scale: isProcessing ? 1 : 0.95 }}
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
