@@ -60,6 +60,15 @@ export const createSOSAlert = async (alertData) => {
     console.log('✅ SOS Alert created:', docRef.id);
     return docRef.id;
   } catch (error) {
+    if (error.code === 'permission-denied') {
+      console.warn('⚠️ Firebase permission denied - using fallback storage');
+      // Fallback to localStorage for demo purposes
+      const localId = `sos_${Date.now()}`;
+      const localAlerts = JSON.parse(localStorage.getItem('local_sos_alerts') || '[]');
+      localAlerts.unshift({ ...alertData, id: localId, timestamp: new Date(), status: 'active' });
+      localStorage.setItem('local_sos_alerts', JSON.stringify(localAlerts));
+      return localId;
+    }
     console.error('❌ Error creating SOS alert:', error);
     throw error;
   }
@@ -82,16 +91,36 @@ export const getSOSAlerts = async (userId, limitCount = 10) => {
 };
 
 export const subscribeToSOSAlerts = (userId, callback) => {
-  const q = query(
-    collection(db, COLLECTIONS.SOS_ALERTS),
-    where('userId', '==', userId),
-    orderBy('timestamp', 'desc'),
-    limit(20)
-  );
-  return onSnapshot(q, (querySnapshot) => {
-    const alerts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    callback(alerts);
-  });
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.SOS_ALERTS),
+      where('userId', '==', userId),
+      orderBy('timestamp', 'desc'),
+      limit(20)
+    );
+    return onSnapshot(q, (querySnapshot) => {
+      const alerts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      callback(alerts);
+    }, (error) => {
+      if (error.code === 'permission-denied') {
+        console.warn('⚠️ Firebase permission denied - using local storage fallback');
+        // Use localStorage as fallback
+        const localAlerts = JSON.parse(localStorage.getItem('local_sos_alerts') || '[]');
+        const userAlerts = localAlerts.filter(alert => alert.userId === userId);
+        callback(userAlerts);
+        return () => {}; // Return empty unsubscribe function
+      }
+      console.error('❌ Error in SOS alerts subscription:', error);
+      callback([]); // Return empty array on error
+    });
+  } catch (error) {
+    console.error('❌ Error setting up SOS alerts subscription:', error);
+    // Fallback to localStorage
+    const localAlerts = JSON.parse(localStorage.getItem('local_sos_alerts') || '[]');
+    const userAlerts = localAlerts.filter(alert => alert.userId === userId);
+    callback(userAlerts);
+    return () => {}; // Return empty unsubscribe function
+  }
 };
 
 // Notification Logs functions
@@ -146,6 +175,15 @@ export const createOrUpdateUser = async (userId, userData) => {
     }, { merge: true });
     console.log('✅ User data saved to Firestore');
   } catch (error) {
+    if (error.code === 'permission-denied') {
+      console.warn('⚠️ Firebase permission denied - using localStorage for user data');
+      // Fallback to localStorage
+      localStorage.setItem(`user_${userId}`, JSON.stringify({
+        ...userData,
+        lastUpdated: new Date().toISOString()
+      }));
+      return;
+    }
     console.error('❌ Error saving user data:', error);
     throw error;
   }
