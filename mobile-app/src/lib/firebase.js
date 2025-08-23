@@ -5,29 +5,165 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from '@/components/ui/use-toast';
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyC6XtUDmKv0aul-zUL3TRH1i2UxWtgCLU0",
+  authDomain: "crowd-monitoring-e1f70.firebaseapp.com",
+  projectId: "crowd-monitoring-e1f70",
+  storageBucket: "crowd-monitoring-e1f70.firebasestorage.app",
+  messagingSenderId: "1069463850395",
+  appId: "1:1069463850395:web:f24d177297c60e0c50a53e",
+  measurementId: "G-68VH97XQ6V"
 };
 
-let app, auth, db, storage;
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
 
-try {
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-  storage = getStorage(app);
-} catch (error) {
-  console.log('🔥 Firebase running in demo mode');
-  auth = null;
-  db = null;
-  storage = null;
-}
+console.log('🔥 Firebase initialized successfully!');
 
-export { auth, db, storage };
+// Firestore helper functions
+import {
+  collection,
+  addDoc,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  onSnapshot,
+  where,
+  serverTimestamp,
+  deleteDoc,
+  updateDoc
+} from 'firebase/firestore';
+
+// Collections
+export const COLLECTIONS = {
+  SOS_ALERTS: 'sos-alerts',
+  NOTIFICATION_LOGS: 'notification-logs',
+  DANGER_ALERTS: 'danger-alerts',
+  USERS: 'users'
+};
+
+// SOS Alerts functions
+export const createSOSAlert = async (alertData) => {
+  try {
+    const docRef = await addDoc(collection(db, COLLECTIONS.SOS_ALERTS), {
+      ...alertData,
+      timestamp: serverTimestamp(),
+      status: 'active',
+      createdAt: serverTimestamp()
+    });
+    console.log('✅ SOS Alert created:', docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error('❌ Error creating SOS alert:', error);
+    throw error;
+  }
+};
+
+export const getSOSAlerts = async (userId, limitCount = 10) => {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.SOS_ALERTS),
+      where('userId', '==', userId),
+      orderBy('timestamp', 'desc'),
+      limit(limitCount)
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('❌ Error getting SOS alerts:', error);
+    throw error;
+  }
+};
+
+export const subscribeToSOSAlerts = (userId, callback) => {
+  const q = query(
+    collection(db, COLLECTIONS.SOS_ALERTS),
+    where('userId', '==', userId),
+    orderBy('timestamp', 'desc'),
+    limit(20)
+  );
+  return onSnapshot(q, (querySnapshot) => {
+    const alerts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(alerts);
+  });
+};
+
+// Notification Logs functions
+export const createNotificationLog = async (logData) => {
+  try {
+    const docRef = await addDoc(collection(db, COLLECTIONS.NOTIFICATION_LOGS), {
+      ...logData,
+      timestamp: serverTimestamp()
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error('❌ Error creating notification log:', error);
+    throw error;
+  }
+};
+
+// Danger Alerts functions
+export const createDangerAlert = async (alertData) => {
+  try {
+    const docRef = await addDoc(collection(db, COLLECTIONS.DANGER_ALERTS), {
+      ...alertData,
+      timestamp: serverTimestamp(),
+      active: true
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error('❌ Error creating danger alert:', error);
+    throw error;
+  }
+};
+
+export const subscribeToDangerAlerts = (location, radiusKm, callback) => {
+  const q = query(
+    collection(db, COLLECTIONS.DANGER_ALERTS),
+    where('active', '==', true),
+    orderBy('timestamp', 'desc')
+  );
+  return onSnapshot(q, (querySnapshot) => {
+    const alerts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // Filter by location radius on client side (for simplicity)
+    // In production, use GeoFirestore for efficient geo queries
+    callback(alerts);
+  });
+};
+
+// User functions
+export const createOrUpdateUser = async (userId, userData) => {
+  try {
+    await setDoc(doc(db, COLLECTIONS.USERS, userId), {
+      ...userData,
+      lastUpdated: serverTimestamp()
+    }, { merge: true });
+    console.log('✅ User data saved to Firestore');
+  } catch (error) {
+    console.error('❌ Error saving user data:', error);
+    throw error;
+  }
+};
+
+export const getUser = async (userId) => {
+  try {
+    const docRef = doc(db, COLLECTIONS.USERS, userId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    }
+    return null;
+  } catch (error) {
+    console.error('❌ Error getting user:', error);
+    throw error;
+  }
+};
 
 const recordStream = (stream, duration) => {
   return new Promise((resolve, reject) => {
@@ -60,24 +196,13 @@ export const uploadVideoAndGetURL = async (stream, userId) => {
     throw new Error("No video stream provided.");
   }
   
-  if (firebaseConfig.apiKey === "YOUR_API_KEY") {
-    console.log("🔥 Firebase running in demo mode - video upload simulated");
-    toast({
-        title: "Demo Mode",
-        description: "Video upload simulated successfully. In production, configure Firebase for real uploads.",
-        duration: 5000
-    });
+  console.log('🎥 Starting real video upload to Firebase Storage...');
 
-    // Simulate upload delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // Return mock data and continue flow
-    return {
-        videoUrl: `https://demo-storage.safeguard.app/sos-videos/demo_${userId}_${Date.now()}.mp4`,
-        videoThumbnail: `https://demo-storage.safeguard.app/thumbnails/demo_${userId}_${Date.now()}.jpg`,
-        videoDuration: 15,
-    };
-  }
+  toast({
+    title: "Uploading Emergency Video",
+    description: "Securely uploading your emergency video to Firebase...",
+    duration: 3000
+  });
 
   const videoDurationMs = 15000;
   const videoBlob = await recordStream(stream, videoDurationMs);
