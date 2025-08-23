@@ -76,10 +76,9 @@ const Login = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-gray-600 flex items-center justify-center gap-1"
+              className="text-gray-600"
             >
               Your safety, our priority
-              <Sparkles className="w-4 h-4 text-yellow-500" />
             </motion.p>
           </div>
 
