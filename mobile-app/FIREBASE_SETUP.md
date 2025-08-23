@@ -1,14 +1,28 @@
-# Firebase Security Rules Setup
+# Firebase Configuration Setup
 
-## Issue
-You're seeing a "Missing or insufficient permissions" error because your Firestore security rules need to be configured to allow anonymous authentication.
+## Issues
+You're experiencing two Firebase configuration issues:
+1. `CONFIGURATION_NOT_FOUND` - Firebase Authentication is not enabled
+2. `Missing or insufficient permissions` - Firestore security rules need configuration
 
 ## Solution
 
+### Step 1: Enable Firebase Authentication
+
 1. **Go to Firebase Console**: https://console.firebase.google.com
 2. **Select your project**: `crowd-monitoring-e1f70`
-3. **Navigate to Firestore Database** → **Rules**
-4. **Replace the existing rules** with the following:
+3. **Navigate to Authentication**
+4. **Click "Get started"** if you haven't set up Authentication yet
+5. **Go to "Sign-in method" tab**
+6. **Enable "Anonymous" authentication**:
+   - Click on "Anonymous"
+   - Toggle "Enable"
+   - Click "Save"
+
+### Step 2: Configure Firestore Security Rules
+
+1. **Navigate to Firestore Database** → **Rules**
+2. **Replace the existing rules** with the following:
 
 ```javascript
 rules_version = '2';
