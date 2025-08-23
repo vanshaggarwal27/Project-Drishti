@@ -158,50 +158,14 @@ export const AuthProvider = ({ children }) => {
         });
       }
 
-      console.log('✅ User successfully created in Firebase Auth and Firestore');
+      console.log('✅ User successfully created');
       return finalUserData;
     } catch (error) {
       console.error('❌ Login error:', error);
 
-      let errorMessage = error.message || "Please check your information and try again.";
-
-      if (error.code === 'permission-denied') {
-        errorMessage = "Firebase permissions need to be configured. Using local storage as fallback.";
-        console.warn('⚠️ Firebase permission denied - check FIREBASE_SETUP.md for instructions');
-
-        // Try to save user locally as fallback
-        try {
-          const fallbackUserData = {
-            id: `user_${Date.now()}`,
-            name: userData.name.trim(),
-            email: userData.email.toLowerCase().trim(),
-            phone: userData.phone.trim(),
-            createdAt: new Date().toISOString(),
-            lastLogin: new Date().toISOString(),
-            safetyStatus: 'safe',
-            locationPermission: 'pending'
-          };
-
-          localStorage.setItem('safeguard_user_session', JSON.stringify(fallbackUserData));
-          setUser({ uid: fallbackUserData.id }); // Mock Firebase user
-          setUserProfile(fallbackUserData);
-          setIsAuthenticated(true);
-
-          toast({
-            title: "Welcome to SafeGuard! 👋",
-            description: `Hello ${fallbackUserData.name}! Running in local mode - check console for Firebase setup instructions.`,
-            duration: 6000
-          });
-
-          return fallbackUserData;
-        } catch (localError) {
-          console.error('❌ Local storage fallback failed:', localError);
-        }
-      }
-
       toast({
         title: "Login Failed",
-        description: errorMessage,
+        description: error.message || "Please check your information and try again.",
         variant: "destructive",
         duration: 5000
       });
