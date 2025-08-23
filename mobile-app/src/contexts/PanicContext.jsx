@@ -69,7 +69,7 @@ export const PanicProvider = ({ children }) => {
   }, [firebaseUser?.uid]);
 
   const activatePanic = async (message, stream) => {
-    if (!firebaseUser?.uid) {
+    if (!firebaseUser?.uid || !userProfile) {
       toast({
         title: "Authentication Required",
         description: "Please log in to send SOS alerts.",
@@ -78,6 +78,8 @@ export const PanicProvider = ({ children }) => {
       });
       return;
     }
+
+    const isLocalMode = userProfile.isLocalUser || firebaseUser.uid.startsWith('local_');
 
     setIsProcessing(true);
     try {
