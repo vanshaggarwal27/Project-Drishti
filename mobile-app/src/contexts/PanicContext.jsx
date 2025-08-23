@@ -47,26 +47,42 @@ export const PanicProvider = ({ children }) => {
   const { location, getCurrentLocation } = useLocation();
   const { firebaseUser, userProfile } = useAuth();
 
-  // Real-time subscription to SOS alerts
+  // Load SOS alerts (Firebase or local storage)
   useEffect(() => {
-    if (!firebaseUser?.uid) return;
+    if (!firebaseUser?.uid || !userProfile) return;
 
-    console.log('🔄 Setting up real-time SOS alerts subscription...');
-    const unsubscribe = subscribeToSOSAlerts(firebaseUser.uid, (alerts) => {
-      console.log('🚨 Received real-time SOS alerts:', alerts.length);
-      setPanicHistory(alerts);
-      setRealtimeAlerts(alerts);
+    const isLocalMode = userProfile.isLocalUser || firebaseUser.uid.startsWith('local_');
+
+    if (isLocalMode) {
+      // Load from localStorage for local mode
+      console.log('💾 Loading SOS alerts from local storage...');
+      const localAlerts = JSON.parse(localStorage.getItem('local_sos_alerts') || '[]');
+      const userAlerts = localAlerts.filter(alert => alert.userId === firebaseUser.uid);
+      setPanicHistory(userAlerts);
+      setRealtimeAlerts(userAlerts);
 
       // Check for active alerts
-      const activeAlert = alerts.find(alert => alert.status === 'active');
+      const activeAlert = userAlerts.find(alert => alert.status === 'active');
       setIsActivated(!!activeAlert);
-    });
+    } else {
+      // Set up Firebase real-time subscription
+      console.log('🔄 Setting up real-time SOS alerts subscription...');
+      const unsubscribe = subscribeToSOSAlerts(firebaseUser.uid, (alerts) => {
+        console.log('🚨 Received real-time SOS alerts:', alerts.length);
+        setPanicHistory(alerts);
+        setRealtimeAlerts(alerts);
 
-    return () => {
-      console.log('🚫 Cleaning up SOS alerts subscription');
-      unsubscribe();
-    };
-  }, [firebaseUser?.uid]);
+        // Check for active alerts
+        const activeAlert = alerts.find(alert => alert.status === 'active');
+        setIsActivated(!!activeAlert);
+      });
+
+      return () => {
+        console.log('🚫 Cleaning up SOS alerts subscription');
+        unsubscribe();
+      };
+    }
+  }, [firebaseUser?.uid, userProfile]);
 
   const activatePanic = async (message, stream) => {
     if (!firebaseUser?.uid || !userProfile) {
