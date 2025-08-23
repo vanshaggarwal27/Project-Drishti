@@ -187,9 +187,6 @@ export const DangerAlertProvider = ({ children }) => {
     return R * c; // Distance in meters
   };
 
-  const dismissAlert = () => {
-    setActiveAlert(null);
-  };
 
   const clearAlertHistory = async () => {
     try {
