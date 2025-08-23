@@ -1,4 +1,6 @@
 import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from '@/components/ui/use-toast';
 
@@ -11,8 +13,21 @@ const firebaseConfig = {
   appId: "YOUR_APP_ID"
 };
 
-const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
+let app, auth, db, storage;
+
+try {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  storage = getStorage(app);
+} catch (error) {
+  console.log('🔥 Firebase running in demo mode');
+  auth = null;
+  db = null;
+  storage = null;
+}
+
+export { auth, db, storage };
 
 const recordStream = (stream, duration) => {
   return new Promise((resolve, reject) => {
