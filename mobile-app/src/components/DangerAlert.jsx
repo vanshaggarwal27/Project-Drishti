@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertTriangle, MapPin } from 'lucide-react';
@@ -27,13 +26,13 @@ const DangerAlert = () => {
   const getAlertColor = (severity) => {
     switch (severity) {
       case 'high':
-        return 'border-red-500 bg-red-500/20';
+        return 'border-red-400 bg-red-50';
       case 'medium':
-        return 'border-orange-500 bg-orange-500/20';
+        return 'border-orange-400 bg-orange-50';
       case 'low':
-        return 'border-yellow-500 bg-yellow-500/20';
+        return 'border-yellow-400 bg-yellow-50';
       default:
-        return 'border-red-500 bg-red-500/20';
+        return 'border-red-400 bg-red-50';
     }
   };
 
