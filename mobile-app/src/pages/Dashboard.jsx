@@ -15,6 +15,9 @@ import {
   Navigation,
   Calendar,
   Zap,
+  Activity,
+  Wifi,
+  Database
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from '@/contexts/LocationContext';
