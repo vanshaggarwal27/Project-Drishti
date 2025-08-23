@@ -361,35 +361,6 @@ const Dashboard = () => {
             </div>
           </motion.section>
 
-          {/* Navigation Guide */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="bg-white/60 backdrop-blur-sm rounded-3xl p-6 border border-gray-200"
-          >
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Quick Navigation</h2>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 bg-red-50 rounded-2xl border border-red-200">
-                <AlertTriangle className="w-8 h-8 text-red-600 mx-auto mb-2" />
-                <div className="font-medium text-gray-800 text-sm">SOS Alerts</div>
-                <div className="text-xs text-gray-600">View emergency notifications</div>
-              </div>
-
-              <div className="text-center p-3 bg-blue-50 rounded-2xl border border-blue-200">
-                <Activity className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                <div className="font-medium text-gray-800 text-sm">History</div>
-                <div className="text-xs text-gray-600">Check past emergency alerts</div>
-              </div>
-            </div>
-
-            <div className="mt-4 text-center">
-              <p className="text-xs text-gray-500">
-                Use the bottom navigation to access all features
-              </p>
-            </div>
-          </motion.section>
         </div>
       </div>
 
