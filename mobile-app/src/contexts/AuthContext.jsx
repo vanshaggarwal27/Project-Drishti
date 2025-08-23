@@ -133,15 +133,30 @@ export const AuthProvider = ({ children }) => {
         };
       }
       
-      setUser(firebaseUser.user);
-      setUserProfile(finalUserData);
-      setIsAuthenticated(true);
+      if (shouldUseFallback) {
+        // Use local storage fallback
+        localStorage.setItem('safeguard_user_session', JSON.stringify(finalUserData));
+        setUser({ uid: finalUserData.id, isAnonymous: true }); // Mock Firebase user
+        setUserProfile(finalUserData);
+        setIsAuthenticated(true);
 
-      toast({
-        title: "Welcome to SafeGuard! 👋",
-        description: `Hello ${finalUserData.name}! Your account is now connected to Firebase.`,
-        duration: 4000
-      });
+        toast({
+          title: "Welcome to SafeGuard! 👋",
+          description: `Hello ${finalUserData.name}! Running in local mode - Firebase needs configuration.`,
+          duration: 6000
+        });
+      } else {
+        // Firebase authentication successful
+        setUser(firebaseUser.user);
+        setUserProfile(finalUserData);
+        setIsAuthenticated(true);
+
+        toast({
+          title: "Welcome to SafeGuard! 👋",
+          description: `Hello ${finalUserData.name}! Your account is connected to Firebase.`,
+          duration: 4000
+        });
+      }
 
       console.log('✅ User successfully created in Firebase Auth and Firestore');
       return finalUserData;
