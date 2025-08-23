@@ -8,13 +8,10 @@ import { LocationProvider } from '@/contexts/LocationContext';
 import { PanicProvider } from '@/contexts/PanicContext';
 import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
-import Navigation from '@/components/Navigation';
-import PanicButton from '@/components/PanicButton';
-import DangerAlert from '@/components/DangerAlert';
-import Home from '@/pages/Home';
-import AlertFeed from '@/pages/AlertFeed';
+import SOSAlerts from '@/pages/SOSAlerts';
 import Settings from '@/pages/Settings';
 import SOSHistory from '@/pages/SOSHistory';
+import BottomNavigation from '@/components/BottomNavigation';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
