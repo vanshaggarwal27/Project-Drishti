@@ -375,8 +375,14 @@ const Dashboard = () => {
                 {formatLastChecked(lastChecked)}
               </div>
               <div className="text-sm text-gray-600">
-                Last update: {lastChecked.toLocaleTimeString()}
+                Last Firebase sync: {lastChecked.toLocaleTimeString()}
               </div>
+              {firebaseUser && (
+                <div className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span>Connected to Firestore</span>
+                </div>
+              )}
             </div>
           </motion.section>
 
