@@ -132,6 +132,11 @@ export const createNotificationLog = async (logData) => {
     });
     return docRef.id;
   } catch (error) {
+    if (error.code === 'permission-denied') {
+      console.warn('⚠️ Firebase permission denied - skipping notification log');
+      // For notification logs, we can silently fail as they're not critical
+      return `local_log_${Date.now()}`;
+    }
     console.error('❌ Error creating notification log:', error);
     throw error;
   }
