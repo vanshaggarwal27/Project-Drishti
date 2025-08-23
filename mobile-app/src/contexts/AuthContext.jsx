@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }) => {
       const firebaseUser = await signInAnonymously(auth);
       const userId = firebaseUser.user.uid;
 
-      const userData = {
+      const finalUserData = {
         ...processedUserData,
         id: userId,
         firebaseUid: userId
