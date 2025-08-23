@@ -109,20 +109,20 @@ export const AuthProvider = ({ children }) => {
       };
 
       // Save user profile to Firestore
-      await createOrUpdateUser(userId, userData);
+      await createOrUpdateUser(userId, finalUserData);
       
       setUser(firebaseUser.user);
-      setUserProfile(userData);
+      setUserProfile(finalUserData);
       setIsAuthenticated(true);
 
       toast({
         title: "Welcome to SafeGuard! 👋",
-        description: `Hello ${userData.name}! Your account is now connected to Firebase.`,
+        description: `Hello ${finalUserData.name}! Your account is now connected to Firebase.`,
         duration: 4000
       });
 
       console.log('✅ User successfully created in Firebase Auth and Firestore');
-      return userData;
+      return finalUserData;
     } catch (error) {
       console.error('Login error:', error);
       toast({
