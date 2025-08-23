@@ -207,16 +207,6 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Demo Mode Notice */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3">
-                <div className="flex items-center gap-2 text-yellow-800">
-                  <Eye className="w-4 h-4" />
-                  <span className="text-sm font-medium">Demo Mode Active</span>
-                </div>
-                <p className="text-xs text-yellow-700 mt-1">
-                  SOS features are simulated. In production, emergency services would be contacted immediately.
-                </p>
-              </div>
 
               {/* Recent SOS History */}
               {panicHistory && panicHistory.length > 0 && (
