@@ -114,8 +114,8 @@ const PanicButton = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <div className="glass-dark px-3 py-1 rounded-lg">
-            <span className="text-xs text-white font-medium">
+          <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg border border-yellow-200 shadow-lg">
+            <span className="text-xs text-gray-800 font-medium">
               {isActivated ? 'Alert Sent!' : isProcessing ? 'Starting...' : 'SOS'}
             </span>
           </div>
