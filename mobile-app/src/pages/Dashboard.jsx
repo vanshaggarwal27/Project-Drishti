@@ -27,12 +27,17 @@ import PanicButton from '@/components/PanicButton';
 import DangerAlert from '@/components/DangerAlert';
 
 const Dashboard = () => {
-  const { userProfile, logout } = useAuth();
+  const { userProfile, firebaseUser, logout } = useAuth();
   const { location, getCurrentLocation, isLoading: locationLoading } = useLocation();
-  const { isActivated: panicActivated, panicHistory, isProcessing: panicProcessing } = usePanic();
-  const { activeAlert } = useDangerAlert();
+  const { isActivated: panicActivated, panicHistory, realtimeAlerts, isProcessing: panicProcessing } = usePanic();
+  const { activeAlert, isConnected: dangerAlertsConnected } = useDangerAlert();
   const [lastChecked, setLastChecked] = useState(new Date());
   const [safetyStatus, setSafetyStatus] = useState('safe');
+  const [realtimeStatus, setRealtimeStatus] = useState({
+    sosAlerts: false,
+    dangerAlerts: false,
+    firebase: false
+  });
 
   useEffect(() => {
     // Update last checked time every minute
