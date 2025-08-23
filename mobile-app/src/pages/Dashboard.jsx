@@ -27,6 +27,8 @@ import DangerAlert from '@/components/DangerAlert';
 const Dashboard = () => {
   const { userProfile, logout } = useAuth();
   const { location, getCurrentLocation, isLoading: locationLoading } = useLocation();
+  const { isActivated: panicActivated, panicHistory, isProcessing: panicProcessing } = usePanic();
+  const { activeAlert } = useDangerAlert();
   const [lastChecked, setLastChecked] = useState(new Date());
   const [safetyStatus, setSafetyStatus] = useState('safe');
 
