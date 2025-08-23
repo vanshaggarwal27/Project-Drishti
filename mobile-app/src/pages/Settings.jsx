@@ -12,8 +12,7 @@ import {
   Users,
   HelpCircle,
   User,
-  LogOut,
-  Eye
+  LogOut
 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
