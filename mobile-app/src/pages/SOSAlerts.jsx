@@ -1,26 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet';
-import { 
-  RefreshCw, 
-  MapPin, 
-  Clock, 
-  Filter, 
-  AlertTriangle, 
+import {
+  RefreshCw,
+  MapPin,
+  Clock,
+  Filter,
+  AlertTriangle,
   CheckCircle,
-  Eye,
+  Database,
   Users,
   Zap,
-  Bell
+  Bell,
+  Wifi
 } from 'lucide-react';
 import { useDangerAlert } from '@/contexts/DangerAlertContext';
+import { usePanic } from '@/contexts/PanicContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/components/ui/use-toast';
 
 const SOSAlerts = () => {
-  const { alertHistory, isConnected, fetchAlertsFromAPI } = useDangerAlert();
+  const { alertHistory, isConnected } = useDangerAlert();
+  const { realtimeAlerts, panicHistory } = usePanic();
+  const { firebaseUser } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [filter, setFilter] = useState('all');
-  const [demoAlerts, setDemoAlerts] = useState([
+
+  // Combine SOS alerts (from panic context) and danger alerts for comprehensive view
+  const allAlerts = React.useMemo(() => {
+    const sosAlerts = (realtimeAlerts || []).map(alert => ({
+      ...alert,
+      type: 'sos',
+      title: 'SOS Emergency Alert',
+      severity: 'high',
+      reportedBy: 'SafeGuard User'
+    }));
+
+    const dangerAlerts = (alertHistory || []).map(alert => ({
+      ...alert,
+      reportedBy: alert.source || 'Emergency Services'
+    }));
+
+    return [...sosAlerts, ...dangerAlerts].sort((a, b) => {
+      const aTime = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
+      const bTime = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
+      return bTime - aTime;
+    });
+  }, [realtimeAlerts, alertHistory]);
+
+  // Legacy demo alerts (to be removed gradually)
+  const [legacyAlerts] = useState([
     {
       id: 'demo_1',
       type: 'medical',
