@@ -174,12 +174,16 @@ const Dashboard = () => {
 
             <div className="mt-4 flex items-center gap-4">
               <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Eye className="w-4 h-4" />
-                <span>Real-time monitoring</span>
+                <Database className="w-4 h-4" />
+                <span>Firebase Real-time</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Shield className="w-4 h-4" />
-                <span>AI Protected</span>
+                <span>Cloud Protected</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Activity className="w-4 h-4" />
+                <span>Live Monitoring</span>
               </div>
             </div>
           </motion.section>
