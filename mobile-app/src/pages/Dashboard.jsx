@@ -421,6 +421,10 @@ const Dashboard = () => {
           </motion.section>
         </div>
       </div>
+
+      {/* Emergency Components */}
+      <PanicButton />
+      <DangerAlert />
     </div>
   );
 };
