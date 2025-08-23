@@ -98,18 +98,40 @@ export const AuthProvider = ({ children }) => {
         locationPermission: 'pending'
       };
 
-      // Authenticate with Firebase and save to Firestore
-      const firebaseUser = await signInAnonymously(auth);
-      const userId = firebaseUser.user.uid;
+      let finalUserData;
+      let shouldUseFallback = false;
 
-      const finalUserData = {
-        ...processedUserData,
-        id: userId,
-        firebaseUid: userId
-      };
+      try {
+        // Try to authenticate with Firebase
+        const firebaseUser = await signInAnonymously(auth);
+        const userId = firebaseUser.user.uid;
 
-      // Save user profile to Firestore
-      await createOrUpdateUser(userId, finalUserData);
+        finalUserData = {
+          ...processedUserData,
+          id: userId,
+          firebaseUid: userId
+        };
+
+        // Try to save user profile to Firestore
+        try {
+          await createOrUpdateUser(userId, finalUserData);
+          console.log('✅ User successfully saved to Firebase');
+        } catch (firestoreError) {
+          console.warn('⚠️ Firestore save failed:', firestoreError.message);
+          // Continue with Firebase Auth but without Firestore
+        }
+      } catch (authError) {
+        console.warn('⚠️ Firebase Auth failed:', authError.message);
+        shouldUseFallback = true;
+
+        // Create fallback user data
+        finalUserData = {
+          ...processedUserData,
+          id: `local_${Date.now()}`,
+          firebaseUid: null,
+          isLocalUser: true
+        };
+      }
       
       setUser(firebaseUser.user);
       setUserProfile(finalUserData);
