@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Shield, 
-  MapPin, 
-  Clock, 
-  User, 
-  LogOut, 
-  AlertTriangle, 
+import {
+  Shield,
+  MapPin,
+  Clock,
+  User,
+  LogOut,
+  AlertTriangle,
   CheckCircle,
   Smartphone,
   Bell,
   Settings,
   Eye,
   Navigation,
-  Calendar
+  Calendar,
+  Zap,
+  Activity
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from '@/contexts/LocationContext';
+import { usePanic } from '@/contexts/PanicContext';
+import { useDangerAlert } from '@/contexts/DangerAlertContext';
+import PanicButton from '@/components/PanicButton';
+import DangerAlert from '@/components/DangerAlert';
 
 const Dashboard = () => {
   const { userProfile, logout } = useAuth();
