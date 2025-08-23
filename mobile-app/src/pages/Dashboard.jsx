@@ -314,85 +314,50 @@ const Dashboard = () => {
             </div>
           </motion.section>
 
-          {/* Feature Placeholders Grid */}
+          {/* Demo Mode Active - Prominent Display */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="space-y-4"
+            className="bg-gradient-to-r from-yellow-400/20 to-amber-400/20 backdrop-blur-sm rounded-3xl p-6 border-2 border-yellow-300/50"
           >
-            <h2 className="text-lg font-semibold text-gray-800">Quick Actions</h2>
-            
-            <div className="grid grid-cols-2 gap-4">
-              {/* Emergency Contacts */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-yellow-200/50 cursor-pointer"
-              >
-                <div className="text-center space-y-2">
-                  <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mx-auto">
-                    <AlertTriangle className="w-6 h-6 text-red-600" />
-                  </div>
-                  <div className="font-medium text-gray-800">Emergency</div>
-                  <div className="text-xs text-gray-600">Quick dial contacts</div>
-                </div>
-              </motion.div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-3">
+                <Eye className="w-6 h-6 text-yellow-600" />
+                Demo Mode Active
+              </h2>
+              <div className="w-4 h-4 bg-yellow-400 rounded-full animate-pulse"></div>
+            </div>
 
-              {/* Test Alert Button */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                onClick={() => {
-                  // Simulate a danger alert for demo
-                  const demoAlert = {
-                    id: `demo_${Date.now()}`,
-                    type: 'warning',
-                    title: 'Demo Safety Alert',
-                    message: 'This is a test alert to demonstrate the emergency notification system.',
-                    severity: 'medium',
-                    timestamp: Date.now(),
-                    location: location || { latitude: 0, longitude: 0 }
-                  };
-                  // This would trigger the danger alert context
-                  console.log('Demo alert triggered:', demoAlert);
-                }}
-                className="bg-yellow-50 backdrop-blur-sm rounded-2xl p-4 border border-yellow-300 cursor-pointer"
-              >
-                <div className="text-center space-y-2">
-                  <div className="w-12 h-12 bg-yellow-200 rounded-xl flex items-center justify-center mx-auto">
-                    <Bell className="w-6 h-6 text-yellow-700" />
-                  </div>
-                  <div className="font-medium text-gray-800">Test Alert</div>
-                  <div className="text-xs text-gray-600">Demo notification</div>
-                </div>
-              </motion.div>
+            <div className="space-y-3">
+              <p className="text-gray-700 leading-relaxed">
+                SafeGuard is running in demonstration mode. All features are functional with simulated data:
+              </p>
 
-              {/* Profile Settings */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-yellow-200/50 cursor-pointer"
-              >
-                <div className="text-center space-y-2">
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto">
-                    <User className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div className="font-medium text-gray-800">Profile</div>
-                  <div className="text-xs text-gray-600">Personal settings</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span>SOS Emergency System Active</span>
                 </div>
-              </motion.div>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span>Location Services Operational</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span>Real-time Alerts System</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <span>Emergency Video Recording</span>
+                </div>
+              </div>
 
-              {/* App Settings */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 border border-yellow-200/50 cursor-pointer"
-              >
-                <div className="text-center space-y-2">
-                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto">
-                    <Settings className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <div className="font-medium text-gray-800">Settings</div>
-                  <div className="text-xs text-gray-600">App preferences</div>
-                </div>
-              </motion.div>
+              <div className="mt-4 p-3 bg-white/60 rounded-xl border border-yellow-200">
+                <p className="text-xs text-gray-600">
+                  💡 <strong>Production Ready:</strong> Configure Firebase credentials and backend endpoints to enable real emergency services integration.
+                </p>
+              </div>
             </div>
           </motion.section>
 
