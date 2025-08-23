@@ -258,28 +258,56 @@ const Dashboard = () => {
               </div>
 
               {/* Real-time SOS History */}
-              {panicHistory && panicHistory.length > 0 && (
+{realtimeAlerts && realtimeAlerts.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-gray-700">Recent SOS Activity</h4>
-                  <div className="space-y-2 max-h-32 overflow-y-auto">
-                    {panicHistory.slice(0, 3).map((alert, index) => (
-                      <div key={alert.id} className="bg-gray-50 rounded-lg p-2 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-600">
-                            {new Date(alert.timestamp).toLocaleTimeString()}
-                          </span>
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            alert.status === 'active' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            {alert.status}
-                          </span>
-                        </div>
-                        {alert.message && (
-                          <p className="text-gray-700 mt-1">{alert.message}</p>
-                        )}
-                      </div>
-                    ))}
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-medium text-gray-700">Live SOS Activity</h4>
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <Wifi className="w-3 h-3" />
+                      <span>Real-time</span>
+                    </div>
                   </div>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {realtimeAlerts.slice(0, 3).map((alert, index) => {
+                      const timestamp = alert.timestamp?.toDate ? alert.timestamp.toDate() : new Date(alert.timestamp);
+                      return (
+                        <div key={alert.id} className="bg-gray-50 rounded-lg p-2 text-xs border-l-2 border-blue-400">
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">
+                              {timestamp.toLocaleTimeString()}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-1 rounded text-xs ${
+                                alert.status === 'active' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'
+                              }`}>
+                                {alert.status}
+                              </span>
+                              {alert.videoUrl && (
+                                <span className="text-xs text-blue-600">🎥</span>
+                              )}
+                            </div>
+                          </div>
+                          {alert.message && (
+                            <p className="text-gray-700 mt-1">{alert.message}</p>
+                          )}
+                          {alert.location && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              📍 {alert.location.latitude?.toFixed(4)}, {alert.location.longitude?.toFixed(4)}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* No SOS History */}
+              {realtimeAlerts && realtimeAlerts.length === 0 && (
+                <div className="bg-green-50 rounded-xl p-3 text-center">
+                  <CheckCircle className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                  <p className="text-sm text-green-700 font-medium">No SOS Alerts</p>
+                  <p className="text-xs text-green-600">All clear - no emergency alerts in your history</p>
                 </div>
               )}
             </div>
