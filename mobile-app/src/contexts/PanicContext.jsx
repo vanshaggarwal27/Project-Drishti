@@ -203,8 +203,8 @@ export const PanicProvider = ({ children }) => {
     } catch (error) {
       console.error("❌ Panic Activation Error:", error);
 
-      // Log error
-      if (firebaseUser?.uid) {
+      // Log error (only for Firebase mode)
+      if (firebaseUser?.uid && !isLocalMode) {
         await createNotificationLog({
           userId: firebaseUser.uid,
           type: 'sos_alert_failed',
