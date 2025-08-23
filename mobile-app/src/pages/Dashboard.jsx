@@ -217,19 +217,47 @@ const Dashboard = () => {
                     </div>
                     <div className={`text-sm ${panicActivated ? 'text-red-600' : 'text-green-600'}`}>
                       {panicActivated
-                        ? 'Emergency services have been notified'
-                        : 'Emergency system is operational'
+                        ? 'Emergency alert saved to Firebase & services notified'
+                        : 'Real-time Firebase emergency system operational'
                       }
                     </div>
                   </div>
-                  {panicProcessing && (
-                    <div className="w-6 h-6 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {panicProcessing && (
+                      <div className="w-6 h-6 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+                    )}
+                    {realtimeStatus.firebase && (
+                      <div className="w-3 h-3 bg-green-400 rounded-full" title="Connected to Firebase"></div>
+                    )}
+                  </div>
                 </div>
               </div>
 
+              {/* Real-time Connection Status */}
+              <div className="bg-white/60 rounded-xl p-3 border border-green-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Database className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-medium text-green-700">Firebase Connected</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-green-600">
+                    <div className="flex items-center gap-1">
+                      <div className={`w-2 h-2 rounded-full ${
+                        realtimeStatus.sosAlerts ? 'bg-green-400' : 'bg-gray-300'
+                      }`}></div>
+                      <span>SOS Alerts</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className={`w-2 h-2 rounded-full ${
+                        realtimeStatus.dangerAlerts ? 'bg-green-400' : 'bg-gray-300'
+                      }`}></div>
+                      <span>Danger Alerts</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-              {/* Recent SOS History */}
+              {/* Real-time SOS History */}
               {panicHistory && panicHistory.length > 0 && (
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium text-gray-700">Recent SOS Activity</h4>
