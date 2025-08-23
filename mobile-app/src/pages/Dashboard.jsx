@@ -168,6 +168,85 @@ const Dashboard = () => {
             </div>
           </motion.section>
 
+          {/* SOS Emergency Status */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 border border-yellow-200/50"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-800">Emergency System</h2>
+              <div className="flex items-center gap-2">
+                <Zap className="w-6 h-6 text-yellow-600" />
+                <div className={`w-3 h-3 rounded-full ${panicActivated ? 'bg-red-400 animate-pulse' : 'bg-green-400'}`}></div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {/* SOS Status */}
+              <div className={`p-4 rounded-2xl border-2 ${
+                panicActivated
+                  ? 'bg-red-50 border-red-200'
+                  : 'bg-green-50 border-green-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className={`font-semibold ${panicActivated ? 'text-red-700' : 'text-green-700'}`}>
+                      {panicActivated ? '🚨 SOS ACTIVE' : '✅ READY FOR EMERGENCY'}
+                    </div>
+                    <div className={`text-sm ${panicActivated ? 'text-red-600' : 'text-green-600'}`}>
+                      {panicActivated
+                        ? 'Emergency services have been notified'
+                        : 'Emergency system is operational'
+                      }
+                    </div>
+                  </div>
+                  {panicProcessing && (
+                    <div className="w-6 h-6 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+                  )}
+                </div>
+              </div>
+
+              {/* Demo Mode Notice */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3">
+                <div className="flex items-center gap-2 text-yellow-800">
+                  <Eye className="w-4 h-4" />
+                  <span className="text-sm font-medium">Demo Mode Active</span>
+                </div>
+                <p className="text-xs text-yellow-700 mt-1">
+                  SOS features are simulated. In production, emergency services would be contacted immediately.
+                </p>
+              </div>
+
+              {/* Recent SOS History */}
+              {panicHistory && panicHistory.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-gray-700">Recent SOS Activity</h4>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {panicHistory.slice(0, 3).map((alert, index) => (
+                      <div key={alert.id} className="bg-gray-50 rounded-lg p-2 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600">
+                            {new Date(alert.timestamp).toLocaleTimeString()}
+                          </span>
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            alert.status === 'active' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {alert.status}
+                          </span>
+                        </div>
+                        {alert.message && (
+                          <p className="text-gray-700 mt-1">{alert.message}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.section>
+
           {/* Location Card */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
