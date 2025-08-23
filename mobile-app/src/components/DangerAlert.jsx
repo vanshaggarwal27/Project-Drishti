@@ -45,16 +45,16 @@ const DangerAlert = () => {
         className="fixed top-4 left-4 right-4 z-50"
       >
         <motion.div
-          className={`glass-dark rounded-2xl p-4 border-2 ${getAlertColor(activeAlert.severity)} danger-alert`}
-          animate={{ 
+          className={`bg-white/95 backdrop-blur-lg rounded-2xl p-4 border-2 ${getAlertColor(activeAlert.severity)} danger-alert shadow-xl`}
+          animate={{
             scale: [1, 1.02, 1],
             boxShadow: [
-              '0 0 0 0 rgba(239, 68, 68, 0.7)',
-              '0 0 0 10px rgba(239, 68, 68, 0)',
-              '0 0 0 0 rgba(239, 68, 68, 0.7)'
+              '0 0 0 0 rgba(251, 191, 36, 0.7)',
+              '0 0 0 10px rgba(251, 191, 36, 0)',
+              '0 0 0 0 rgba(251, 191, 36, 0.7)'
             ]
           }}
-          transition={{ 
+          transition={{
             duration: 2,
             repeat: Infinity,
             ease: "easeInOut"
