@@ -189,10 +189,10 @@ export const PanicProvider = ({ children }) => {
         console.log('✅ SOS Alert successfully created in Firestore:', alertId);
       }
 
-      // Auto-reset after 3 seconds to allow sending multiple alerts quickly
+      // Auto-reset after 1.5 seconds to allow sending multiple alerts quickly
       setTimeout(() => {
         setIsActivated(false);
-      }, 3000);
+      }, 1500);
 
     } catch (error) {
       console.error("❌ Panic Activation Error:", error);
