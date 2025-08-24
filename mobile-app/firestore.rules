@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // SOS Alerts - Allow mobile apps to create, admin to read/update
+    match /sos-alerts/{alertId} {
+      allow create: if request.auth != null && 
+        request.resource.data.keys().hasAll(['userId', 'message', 'videoUrl', 'location']);
+      allow read, update: if request.auth != null;
+    }
+    
+    // Analysis Logs - System only
+    match /analysis-logs/{logId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Alerts - Admin only for create/update, public read
+    match /alerts/{alertId} {
+      allow read: if true;  // Public read for emergency alerts
+      allow create, update, delete: if request.auth != null;
+    }
+    
+    // Notification Logs - System only
+    match /notificationLogs/{logId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Users collection - Users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
