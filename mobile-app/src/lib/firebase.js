@@ -114,7 +114,7 @@ export const getSOSAlerts = async (userId, limitCount = 10) => {
     const q = query(
       collection(db, COLLECTIONS.SOS_ALERTS),
       where('userId', '==', userId),
-      orderBy('timestamp', 'desc'),
+      orderBy('createdAt', 'desc'),
       limit(limitCount)
     );
     const querySnapshot = await getDocs(q);
@@ -130,7 +130,7 @@ export const subscribeToSOSAlerts = (userId, callback) => {
     const q = query(
       collection(db, COLLECTIONS.SOS_ALERTS),
       where('userId', '==', userId),
-      orderBy('timestamp', 'desc'),
+      orderBy('createdAt', 'desc'),
       limit(20)
     );
     return onSnapshot(q, (querySnapshot) => {
