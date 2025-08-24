@@ -279,7 +279,13 @@ export const PanicProvider = ({ children }) => {
   };
 
   const deactivatePanic = () => {
+    // Clear any pending timeout
+    if (window.panicButtonTimeout) {
+      clearTimeout(window.panicButtonTimeout);
+      window.panicButtonTimeout = null;
+    }
     setIsActivated(false);
+    console.log('🔄 Button manually deactivated');
   };
 
   const clearHistory = async () => {
