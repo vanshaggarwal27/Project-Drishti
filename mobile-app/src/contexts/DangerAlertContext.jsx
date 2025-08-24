@@ -242,7 +242,7 @@ export const DangerAlertProvider = ({ children }) => {
     isConnected,
     dismissAlert,
     clearAlertHistory,
-    createNewDangerAlert,
+    createNewSystemAlert,
     simulateIncomingAlert
   };
 
