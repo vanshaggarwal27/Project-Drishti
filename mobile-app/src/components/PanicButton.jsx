@@ -22,7 +22,7 @@ const PanicButton = () => {
   const streamRef = useRef(null);
 
   const handlePanicPress = () => {
-    if (isActivated || isProcessing) return;
+    if (isProcessing) return; // Only prevent during processing, allow multiple alerts
     setShowConfirmation(true);
   };
 
