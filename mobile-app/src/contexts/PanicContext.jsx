@@ -190,10 +190,14 @@ export const PanicProvider = ({ children }) => {
         console.log('✅ SOS Alert successfully created in Firestore:', alertId);
       }
 
-      // Auto-reset after 1.5 seconds to allow sending multiple alerts quickly
-      setTimeout(() => {
+      // Auto-reset button state after 2 seconds to allow sending multiple alerts quickly
+      const resetTimeout = setTimeout(() => {
+        console.log('🔄 Resetting button state to allow next alert');
         setIsActivated(false);
-      }, 1500);
+      }, 2000);
+
+      // Store the timeout so it can be cleared if needed
+      window.panicButtonTimeout = resetTimeout;
 
     } catch (error) {
       console.error("❌ Panic Activation Error:", error);
@@ -266,7 +270,7 @@ export const PanicProvider = ({ children }) => {
 
       // In development mode, don't fail completely since Firebase storage worked
       if (window.location.hostname === 'localhost' || window.location.hostname.includes('fly.dev')) {
-        console.warn('���️ Backend not available, but alert saved to Firebase');
+        console.warn('⚠️ Backend not available, but alert saved to Firebase');
         return;
       }
 
