@@ -61,8 +61,8 @@ export const PanicProvider = ({ children }) => {
       setPanicHistory(userAlerts);
       setRealtimeAlerts(userAlerts);
 
-      // Check for active alerts
-      const activeAlert = userAlerts.find(alert => alert.status === 'active');
+      // Check for pending/active alerts (new schema uses 'pending' for new alerts)
+      const activeAlert = userAlerts.find(alert => alert.status === 'pending' || alert.status === 'active');
       setIsActivated(!!activeAlert);
     } else {
       // Set up Firebase real-time subscription
@@ -72,8 +72,8 @@ export const PanicProvider = ({ children }) => {
         setPanicHistory(alerts);
         setRealtimeAlerts(alerts);
 
-        // Check for active alerts
-        const activeAlert = alerts.find(alert => alert.status === 'active');
+        // Check for pending/active alerts (new schema uses 'pending' for new alerts)
+        const activeAlert = alerts.find(alert => alert.status === 'pending' || alert.status === 'active');
         setIsActivated(!!activeAlert);
       });
 
