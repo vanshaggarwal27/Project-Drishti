@@ -115,27 +115,17 @@ export const PanicProvider = ({ children }) => {
 
       const deviceInfo = getDeviceInfo();
 
-      // Create SOS alert data
+      // Create SOS alert data according to new schema
       const sosAlertData = {
+        // REQUIRED FIELDS for new schema
         userId: firebaseUser.uid,
-        userName: userProfile?.name || 'Unknown User',
-        userEmail: userProfile?.email || '',
-        userPhone: userProfile?.phone || '',
         message: message || "Emergency SOS activated without a message.",
+        videoUrl: videoData.videoUrl,
         location: {
           latitude: currentLocation.latitude,
           longitude: currentLocation.longitude,
-          accuracy: currentLocation.accuracy
-        },
-        deviceInfo,
-        videoUrl: videoData.videoUrl,
-        videoThumbnail: videoData.videoThumbnail,
-        videoDuration: videoData.videoDuration,
-        type: 'panic',
-        severity: 'high',
-        notificationsSent: [],
-        responseTime: null,
-        resolvedAt: null
+          address: `${currentLocation.latitude.toFixed(4)}, ${currentLocation.longitude.toFixed(4)}` // Simple coordinate-based address
+        }
       };
 
       let alertId;
