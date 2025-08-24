@@ -332,6 +332,22 @@ export const getVideosByService = async (serviceType, limitCount = 20) => {
   }
 };
 
+// Get all SOS alerts for admin dashboard (no user filtering)
+export const getAllSOSAlertsForAdmin = async (limitCount = 50) => {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.SOS_ALERTS),
+      orderBy('createdAt', 'desc'),
+      limit(limitCount)
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('❌ Error getting all SOS alerts for admin:', error);
+    throw error;
+  }
+};
+
 // User functions
 export const createOrUpdateUser = async (userId, userData) => {
   try {
