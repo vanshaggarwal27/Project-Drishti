@@ -326,6 +326,15 @@ export const PanicProvider = ({ children }) => {
     }
   };
 
+  const resetButtonState = () => {
+    console.log('🔄 Manually resetting button state');
+    if (window.panicButtonTimeout) {
+      clearTimeout(window.panicButtonTimeout);
+      window.panicButtonTimeout = null;
+    }
+    setIsActivated(false);
+  };
+
   const value = {
     isActivated,
     hasActiveAlerts,
@@ -336,15 +345,22 @@ export const PanicProvider = ({ children }) => {
     activatePanic,
     deactivatePanic,
     clearHistory,
-    resetButtonState: () => {
-      console.log('🔄 Manually resetting button state');
-      if (window.panicButtonTimeout) {
-        clearTimeout(window.panicButtonTimeout);
-        window.panicButtonTimeout = null;
-      }
-      setIsActivated(false);
-    }
+    resetButtonState
   };
+
+  // Global debug function for testing
+  React.useEffect(() => {
+    window.debugSOSButton = () => {
+      console.log('🐛 SOS Button Debug Info:', {
+        isActivated,
+        hasActiveAlerts,
+        isProcessing,
+        panicHistoryCount: panicHistory.length,
+        timeoutExists: !!window.panicButtonTimeout
+      });
+    };
+    window.resetSOSButton = resetButtonState;
+  }, [isActivated, hasActiveAlerts, isProcessing, panicHistory.length]);
 
   return (
     <PanicContext.Provider value={value}>
