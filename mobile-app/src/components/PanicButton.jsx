@@ -15,12 +15,24 @@ import {
 import { toast } from '@/components/ui/use-toast';
 
 const PanicButton = () => {
-  const { isActivated, activatePanic, isProcessing, setIsProcessing } = usePanic();
+  const { isActivated, activatePanic, isProcessing, setIsProcessing, resetButtonState } = usePanic();
 
   // Debug state changes
   React.useEffect(() => {
     console.log('🔴 PanicButton state changed:', { isActivated, isProcessing });
   }, [isActivated, isProcessing]);
+
+  // Backup reset mechanism - if button is stuck in activated state for too long
+  React.useEffect(() => {
+    if (isActivated && !isProcessing) {
+      const backupTimeout = setTimeout(() => {
+        console.log('🔧 Backup reset triggered - button was stuck');
+        resetButtonState();
+      }, 5000); // Reset after 5 seconds as a backup
+
+      return () => clearTimeout(backupTimeout);
+    }
+  }, [isActivated, isProcessing, resetButtonState]);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [message, setMessage] = useState('');
   const videoRef = useRef(null);
