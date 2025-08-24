@@ -286,7 +286,17 @@ export const subscribeToSystemAlerts = (callback) => {
         });
       callback(alerts);
     }, (error) => {
-      console.warn('⚠️ System alerts subscription error:', error.message);
+      if (error.code === 'failed-precondition' && error.message.includes('index')) {
+        console.error('🔥 Firebase composite index required. Create it here:', error.message);
+        toast({
+          title: "Database Index Required",
+          description: "System alerts may be limited. Check console for Firebase index URL.",
+          variant: "destructive",
+          duration: 10000
+        });
+      } else {
+        console.warn('⚠️ System alerts subscription error:', error.message);
+      }
       callback([]); // Return empty array on error
     });
   } catch (error) {
