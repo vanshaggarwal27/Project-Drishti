@@ -62,14 +62,14 @@ export const DangerAlertProvider = ({ children }) => {
     };
   }, [location, activeAlert]);
 
-  // Create a new danger alert (for testing or admin use)
-  const createNewDangerAlert = async (alertData) => {
+  // Create a new system alert (for testing or admin use)
+  const createNewSystemAlert = async (alertData) => {
     try {
       if (!firebaseUser?.uid) {
         throw new Error('User must be authenticated to create alerts');
       }
 
-      const alertId = await createDangerAlert({
+      const alertId = await createSystemAlert({
         ...alertData,
         createdBy: firebaseUser.uid,
         location: alertData.location || location
@@ -77,17 +77,17 @@ export const DangerAlertProvider = ({ children }) => {
 
       // Log the action
       await createNotificationLog({
-        userId: firebaseUser.uid,
-        type: 'danger_alert_created',
-        alertId: alertId,
-        message: `Danger alert created: ${alertData.title}`,
-        metadata: alertData
+        reportId: alertId,
+        type: 'system_alert_created',
+        emergencyServices: [],
+        publicRecipients: [],
+        status: 'sent'
       });
 
-      console.log('✅ Danger alert created:', alertId);
+      console.log('✅ System alert created:', alertId);
       return alertId;
     } catch (error) {
-      console.error('❌ Error creating danger alert:', error);
+      console.error('❌ Error creating system alert:', error);
       throw error;
     }
   };
