@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shield, User, Mail, Phone, LogIn, Sparkles } from 'lucide-react';
+import { Shield, User, Mail, Phone, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Login = () => {
@@ -76,10 +76,9 @@ const Login = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-gray-600 flex items-center justify-center gap-1"
+              className="text-gray-600"
             >
               Your safety, our priority
-              <Sparkles className="w-4 h-4 text-yellow-500" />
             </motion.p>
           </div>
 
@@ -184,31 +183,6 @@ const Login = () => {
           </motion.div>
         </motion.div>
 
-        {/* Additional Info Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-          className="mt-6 grid grid-cols-2 gap-4"
-        >
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-yellow-200/50">
-            <div className="text-center">
-              <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Shield className="w-4 h-4 text-yellow-600" />
-              </div>
-              <p className="text-xs font-medium text-gray-700">Secure & Private</p>
-            </div>
-          </div>
-          
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-yellow-200/50">
-            <div className="text-center">
-              <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Sparkles className="w-4 h-4 text-yellow-600" />
-              </div>
-              <p className="text-xs font-medium text-gray-700">AI Powered</p>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </div>
   );

@@ -1,60 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet';
-import { 
-  RefreshCw, 
-  MapPin, 
-  Clock, 
-  Filter, 
-  AlertTriangle, 
+import {
+  RefreshCw,
+  MapPin,
+  Clock,
+  Filter,
+  AlertTriangle,
   CheckCircle,
-  Eye,
+  Database,
   Users,
   Zap,
-  Bell
+  Bell,
+  Wifi,
+  Eye
 } from 'lucide-react';
 import { useDangerAlert } from '@/contexts/DangerAlertContext';
+import { usePanic } from '@/contexts/PanicContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/components/ui/use-toast';
 
 const SOSAlerts = () => {
-  const { alertHistory, isConnected, fetchAlertsFromAPI } = useDangerAlert();
+  const { alertHistory, isConnected } = useDangerAlert();
+  const { realtimeAlerts, panicHistory } = usePanic();
+  const { firebaseUser } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [filter, setFilter] = useState('all');
-  const [demoAlerts, setDemoAlerts] = useState([
-    {
-      id: 'demo_1',
-      type: 'medical',
-      title: 'Medical Emergency',
-      message: 'Person requiring immediate medical attention reported near Central Plaza',
+
+  // Combine SOS alerts (from panic context) and danger alerts for comprehensive view
+  const allAlerts = React.useMemo(() => {
+    const sosAlerts = (realtimeAlerts || []).map(alert => ({
+      ...alert,
+      type: 'sos',
+      title: 'SOS Emergency Alert',
       severity: 'high',
-      timestamp: Date.now() - 5 * 60 * 1000, // 5 minutes ago
-      location: { latitude: 28.7041, longitude: 77.1025, address: 'Central Plaza, Delhi' },
-      status: 'active',
-      reportedBy: 'SafeGuard User #1234'
-    },
-    {
-      id: 'demo_2',
-      type: 'evacuation',
-      title: 'Evacuation Alert',
-      message: 'Planned evacuation drill at Metro Station - Please follow emergency exits',
-      severity: 'medium',
-      timestamp: Date.now() - 15 * 60 * 1000, // 15 minutes ago
-      location: { latitude: 28.6139, longitude: 77.2090, address: 'Metro Station, Delhi' },
-      status: 'resolved',
-      reportedBy: 'Emergency Services'
-    },
-    {
-      id: 'demo_3',
-      type: 'warning',
-      title: 'Crowd Warning',
-      message: 'High crowd density detected in shopping area - Please maintain safe distance',
-      severity: 'low',
-      timestamp: Date.now() - 30 * 60 * 1000, // 30 minutes ago
-      location: { latitude: 28.5355, longitude: 77.3910, address: 'Shopping Mall, Noida' },
-      status: 'monitoring',
-      reportedBy: 'AI System'
-    }
-  ]);
+      reportedBy: 'SafeGuard User'
+    }));
+
+    const dangerAlerts = (alertHistory || []).map(alert => ({
+      ...alert,
+      reportedBy: alert.source || 'Emergency Services'
+    }));
+
+    return [...sosAlerts, ...dangerAlerts].sort((a, b) => {
+      const aTime = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
+      const bTime = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
+      return bTime - aTime;
+    });
+  }, [realtimeAlerts, alertHistory]);
+
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -152,7 +146,7 @@ const SOSAlerts = () => {
     return new Date(timestamp).toLocaleDateString();
   };
 
-  const filteredAlerts = demoAlerts.filter(alert => {
+  const filteredAlerts = allAlerts.filter(alert => {
     if (filter === 'all') return true;
     return alert.severity === filter || alert.status === filter;
   });
@@ -197,24 +191,6 @@ const SOSAlerts = () => {
         </motion.header>
 
         <div className="px-6 py-6 space-y-6">
-          {/* Demo Mode Notice */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-yellow-200 rounded-xl flex items-center justify-center">
-                <Eye className="w-5 h-5 text-yellow-700" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-yellow-800">Demo Mode Active</h3>
-                <p className="text-sm text-yellow-700">
-                  Showing simulated emergency alerts. In production, real emergency data would be displayed.
-                </p>
-              </div>
-            </div>
-          </motion.div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-3 gap-4">
@@ -229,7 +205,7 @@ const SOSAlerts = () => {
                   <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
                 <div className="text-2xl font-bold text-red-700">
-                  {demoAlerts.filter(a => a.status === 'active').length}
+                  {allAlerts.filter(a => a.status === 'active' || a.status === 'pending').length}
                 </div>
                 <div className="text-xs text-gray-600">Active Alerts</div>
               </div>
@@ -246,7 +222,7 @@ const SOSAlerts = () => {
                   <CheckCircle className="w-6 h-6 text-green-600" />
                 </div>
                 <div className="text-2xl font-bold text-green-700">
-                  {demoAlerts.filter(a => a.status === 'resolved').length}
+                  {allAlerts.filter(a => a.status === 'resolved' || a.status === 'completed').length}
                 </div>
                 <div className="text-xs text-gray-600">Resolved</div>
               </div>
@@ -263,7 +239,7 @@ const SOSAlerts = () => {
                   <Eye className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="text-2xl font-bold text-blue-700">
-                  {demoAlerts.filter(a => a.status === 'monitoring').length}
+                  {allAlerts.filter(a => a.status === 'monitoring' || a.status === 'analyzing').length}
                 </div>
                 <div className="text-xs text-gray-600">Monitoring</div>
               </div>
@@ -352,8 +328,15 @@ const SOSAlerts = () => {
               className="text-center py-12"
             >
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">All Clear!</h3>
-              <p className="text-gray-600">No alerts matching your filter criteria.</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                {allAlerts.length === 0 ? "No SOS Alerts Yet" : "All Clear!"}
+              </h3>
+              <p className="text-gray-600">
+                {allAlerts.length === 0
+                  ? "No emergency alerts have been created yet. Press the SOS button to create your first alert."
+                  : "No alerts matching your filter criteria."
+                }
+              </p>
             </motion.div>
           )}
         </div>
