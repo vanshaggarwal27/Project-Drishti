@@ -478,7 +478,7 @@ export const uploadVideoAndGetURL = async (stream, userId) => {
   const videoDurationMs = 15000;
   const videoBlob = await recordStream(stream, videoDurationMs);
   
-  const videoFileName = `sos-videos/${userId}/sos_${Date.now()}.mp4`;
+  const videoFileName = `sos-videos/sos_${Date.now()}.mp4`;
   const videoRef = ref(storage, videoFileName);
 
   try {
