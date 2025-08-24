@@ -29,16 +29,16 @@ export const DangerAlertProvider = ({ children }) => {
   useEffect(() => {
     if (!location) return;
 
-    console.log('🔄 Setting up real-time danger alerts subscription...');
+    console.log('🔄 Setting up real-time system alerts subscription...');
     setIsConnected(true);
 
-    const unsubscribe = subscribeToDangerAlerts(location, 5, (alerts) => {
-      console.log('⚠️ Received real-time danger alerts:', alerts.length);
+    const unsubscribe = subscribeToSystemAlerts((alerts) => {
+      console.log('⚠️ Received real-time system alerts:', alerts.length);
       setAlertHistory(alerts);
 
       // Check for new active alerts
       const newActiveAlert = alerts.find(alert =>
-        alert.active &&
+        alert.isActive &&
         (!activeAlert || alert.id !== activeAlert.id)
       );
 
@@ -55,7 +55,7 @@ export const DangerAlertProvider = ({ children }) => {
     }, 30000);
 
     return () => {
-      console.log('🚫 Cleaning up danger alerts subscription');
+      console.log('🚫 Cleaning up system alerts subscription');
       unsubscribe();
       clearInterval(demoInterval);
       setIsConnected(false);
