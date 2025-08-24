@@ -116,7 +116,7 @@ const PanicButton = () => {
         >
           <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg border border-yellow-200 shadow-lg">
             <span className="text-xs text-gray-800 font-medium">
-              {isActivated ? 'Alert Sent!' : isProcessing ? 'Starting...' : 'SOS'}
+              {isActivated ? 'Sent! Ready for next' : isProcessing ? 'Starting...' : 'SOS'}
             </span>
           </div>
         </motion.div>
