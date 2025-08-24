@@ -57,17 +57,16 @@ export const PanicProvider = ({ children }) => {
       // Load from localStorage for local mode
       console.log('💾 Loading SOS alerts from local storage...');
       const localAlerts = JSON.parse(localStorage.getItem('local_sos_alerts') || '[]');
-      const userAlerts = localAlerts.filter(alert => alert.userId === firebaseUser.uid);
-      setPanicHistory(userAlerts);
-      setRealtimeAlerts(userAlerts);
+      setPanicHistory(localAlerts);
+      setRealtimeAlerts(localAlerts);
 
       // Check for pending/active alerts (new schema uses 'pending' for new alerts)
-      const activeAlert = userAlerts.find(alert => alert.status === 'pending' || alert.status === 'active');
+      const activeAlert = localAlerts.find(alert => alert.status === 'pending' || alert.status === 'active');
       setIsActivated(!!activeAlert);
     } else {
       // Set up Firebase real-time subscription
       console.log('🔄 Setting up real-time SOS alerts subscription...');
-      const unsubscribe = subscribeToSOSAlerts(firebaseUser.uid, (alerts) => {
+      const unsubscribe = subscribeToSOSAlerts((alerts) => {
         console.log('🚨 Received real-time SOS alerts:', alerts.length);
         setPanicHistory(alerts);
         setRealtimeAlerts(alerts);
