@@ -49,42 +49,6 @@ const SOSAlerts = () => {
     });
   }, [realtimeAlerts, alertHistory]);
 
-  // Legacy demo alerts (to be removed gradually)
-  const [legacyAlerts] = useState([
-    {
-      id: 'demo_1',
-      type: 'medical',
-      title: 'Medical Emergency',
-      message: 'Person requiring immediate medical attention reported near Central Plaza',
-      severity: 'high',
-      timestamp: Date.now() - 5 * 60 * 1000, // 5 minutes ago
-      location: { latitude: 28.7041, longitude: 77.1025, address: 'Central Plaza, Delhi' },
-      status: 'active',
-      reportedBy: 'SafeGuard User #1234'
-    },
-    {
-      id: 'demo_2',
-      type: 'evacuation',
-      title: 'Evacuation Alert',
-      message: 'Planned evacuation drill at Metro Station - Please follow emergency exits',
-      severity: 'medium',
-      timestamp: Date.now() - 15 * 60 * 1000, // 15 minutes ago
-      location: { latitude: 28.6139, longitude: 77.2090, address: 'Metro Station, Delhi' },
-      status: 'resolved',
-      reportedBy: 'Emergency Services'
-    },
-    {
-      id: 'demo_3',
-      type: 'warning',
-      title: 'Crowd Warning',
-      message: 'High crowd density detected in shopping area - Please maintain safe distance',
-      severity: 'low',
-      timestamp: Date.now() - 30 * 60 * 1000, // 30 minutes ago
-      location: { latitude: 28.5355, longitude: 77.3910, address: 'Shopping Mall, Noida' },
-      status: 'monitoring',
-      reportedBy: 'AI System'
-    }
-  ]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -182,7 +146,7 @@ const SOSAlerts = () => {
     return new Date(timestamp).toLocaleDateString();
   };
 
-  const filteredAlerts = (allAlerts.length > 0 ? allAlerts : legacyAlerts).filter(alert => {
+  const filteredAlerts = allAlerts.filter(alert => {
     if (filter === 'all') return true;
     return alert.severity === filter || alert.status === filter;
   });
@@ -241,7 +205,7 @@ const SOSAlerts = () => {
                   <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
                 <div className="text-2xl font-bold text-red-700">
-                  {(allAlerts.length > 0 ? allAlerts : legacyAlerts).filter(a => a.status === 'active').length}
+                  {allAlerts.filter(a => a.status === 'active' || a.status === 'pending').length}
                 </div>
                 <div className="text-xs text-gray-600">Active Alerts</div>
               </div>
@@ -258,7 +222,7 @@ const SOSAlerts = () => {
                   <CheckCircle className="w-6 h-6 text-green-600" />
                 </div>
                 <div className="text-2xl font-bold text-green-700">
-                  {(allAlerts.length > 0 ? allAlerts : legacyAlerts).filter(a => a.status === 'resolved').length}
+                  {allAlerts.filter(a => a.status === 'resolved' || a.status === 'completed').length}
                 </div>
                 <div className="text-xs text-gray-600">Resolved</div>
               </div>
@@ -275,7 +239,7 @@ const SOSAlerts = () => {
                   <Eye className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="text-2xl font-bold text-blue-700">
-                  {(allAlerts.length > 0 ? allAlerts : legacyAlerts).filter(a => a.status === 'monitoring').length}
+                  {allAlerts.filter(a => a.status === 'monitoring' || a.status === 'analyzing').length}
                 </div>
                 <div className="text-xs text-gray-600">Monitoring</div>
               </div>
@@ -364,8 +328,15 @@ const SOSAlerts = () => {
               className="text-center py-12"
             >
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">All Clear!</h3>
-              <p className="text-gray-600">No alerts matching your filter criteria.</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                {allAlerts.length === 0 ? "No SOS Alerts Yet" : "All Clear!"}
+              </h3>
+              <p className="text-gray-600">
+                {allAlerts.length === 0
+                  ? "No emergency alerts have been created yet. Press the SOS button to create your first alert."
+                  : "No alerts matching your filter criteria."
+                }
+              </p>
             </motion.div>
           )}
         </div>
