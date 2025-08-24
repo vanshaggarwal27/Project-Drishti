@@ -97,6 +97,12 @@ export const PanicProvider = ({ children }) => {
 
     const isLocalMode = userProfile.isLocalUser || firebaseUser.uid.startsWith('local_');
 
+    // Clear any existing timeout before starting new process
+    if (window.panicButtonTimeout) {
+      clearTimeout(window.panicButtonTimeout);
+      window.panicButtonTimeout = null;
+    }
+
     setIsProcessing(true);
     try {
       // Get current location
