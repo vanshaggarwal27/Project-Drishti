@@ -100,26 +100,20 @@ export const DangerAlertProvider = ({ children }) => {
     const randomType = alertTypes[Math.floor(Math.random() * alertTypes.length)];
 
     const mockAlert = {
-      type: randomType,
-      severity: Math.random() > 0.5 ? 'high' : 'medium',
+      id: `alert_${Date.now()}`,
       title: `${randomType.charAt(0).toUpperCase() + randomType.slice(1)} Alert`,
       message: `Emergency situation reported in your area. Please stay alert and follow safety protocols.`,
-      location: {
-        latitude: location.latitude + (Math.random() - 0.5) * 0.01,
-        longitude: location.longitude + (Math.random() - 0.5) * 0.01
-      },
+      severity: Math.random() > 0.5 ? 'high' : 'medium',
+      location: `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`,
       radius: 500, // meters
-      source: 'emergency_services',
-      metadata: {
-        simulated: true,
-        generatedAt: new Date().toISOString()
-      }
+      duration: 60, // minutes
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000) // 1 hour from now
     };
 
     try {
       // Create real Firestore entry
-      const alertId = await createDangerAlert(mockAlert);
-      console.log('🚨 Simulated danger alert created in Firestore:', alertId);
+      const alertId = await createSystemAlert(mockAlert);
+      console.log('🚨 Simulated system alert created in Firestore:', alertId);
     } catch (error) {
       console.error('❌ Error creating simulated alert:', error);
     }
