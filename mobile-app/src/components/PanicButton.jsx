@@ -78,16 +78,19 @@ const PanicButton = () => {
       >
         <AnimatePresence mode="wait">
           {isActivated ? (
-            <motion.div
+            <motion.button
               key="activated"
+              onClick={handlePanicPress}
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
-              className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg border-2 border-green-400"
+              className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg border-2 border-green-400 hover:scale-105 transition-transform cursor-pointer"
               style={{ backgroundColor: 'rgba(34, 197, 94, 0.9)', backdropFilter: 'blur(10px)' }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
             >
               <Check size={24} className="text-white" />
-            </motion.div>
+            </motion.button>
           ) : (
             <motion.button
               key="panic"
