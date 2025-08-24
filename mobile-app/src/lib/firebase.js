@@ -269,66 +269,107 @@ export const updateSOSAlertWithAnalysis = async (alertId, analysisData) => {
 
 // System Alerts subscription
 export const subscribeToSystemAlerts = (callback) => {
-  const q = query(
-    collection(db, COLLECTIONS.ALERTS),
-    where('isActive', '==', true),
-    orderBy('createdAt', 'desc')
-  );
-  return onSnapshot(q, (querySnapshot) => {
-    const alerts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    callback(alerts);
-  });
+  try {
+    // Simplified query to avoid composite index requirement
+    const q = query(
+      collection(db, COLLECTIONS.ALERTS),
+      where('isActive', '==', true),
+      limit(50)
+    );
+    return onSnapshot(q, (querySnapshot) => {
+      const alerts = querySnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+          return bTime - aTime;
+        });
+      callback(alerts);
+    }, (error) => {
+      console.warn('⚠️ System alerts subscription error:', error.message);
+      callback([]); // Return empty array on error
+    });
+  } catch (error) {
+    console.error('❌ Error setting up system alerts subscription:', error);
+    callback([]);
+    return () => {}; // Return empty unsubscribe function
+  }
 };
 
 // Get emergency videos (for admin dashboard)
 export const getEmergencyVideos = async (limitCount = 20) => {
   try {
+    // Simplified query to avoid composite index requirement
     const q = query(
       collection(db, COLLECTIONS.SOS_ALERTS),
       where('isEmergency', '==', true),
-      orderBy('createdAt', 'desc'),
       limit(limitCount)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const alerts = querySnapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((a, b) => {
+        const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+        const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+        return bTime - aTime;
+      });
+    return alerts;
   } catch (error) {
     console.error('❌ Error getting emergency videos:', error);
-    throw error;
+    // Return empty array on error instead of throwing
+    return [];
   }
 };
 
 // Get videos pending analysis
 export const getVideosForAnalysis = async (limitCount = 10) => {
   try {
+    // Simplified query to avoid composite index requirement
     const q = query(
       collection(db, COLLECTIONS.SOS_ALERTS),
       where('geminiAnalysis', '==', null),
-      where('videoUrl', '!=', null),
-      orderBy('createdAt', 'desc'),
-      limit(limitCount)
+      limit(limitCount * 2) // Get more to filter client-side
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const alerts = querySnapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(alert => alert.videoUrl) // Filter for videos on client-side
+      .sort((a, b) => {
+        const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+        const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+        return bTime - aTime;
+      })
+      .slice(0, limitCount); // Limit after sorting
+    return alerts;
   } catch (error) {
     console.error('❌ Error getting videos for analysis:', error);
-    throw error;
+    // Return empty array on error instead of throwing
+    return [];
   }
 };
 
 // Get videos by service type
 export const getVideosByService = async (serviceType, limitCount = 20) => {
   try {
+    // Simplified query to avoid composite index requirement
     const q = query(
       collection(db, COLLECTIONS.SOS_ALERTS),
       where('primaryService', '==', serviceType),
-      orderBy('createdAt', 'desc'),
       limit(limitCount)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const alerts = querySnapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((a, b) => {
+        const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+        const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+        return bTime - aTime;
+      });
+    return alerts;
   } catch (error) {
     console.error('❌ Error getting videos by service type:', error);
-    throw error;
+    // Return empty array on error instead of throwing
+    return [];
   }
 };
 
