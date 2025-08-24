@@ -78,6 +78,7 @@ const PanicButton = () => {
 
   const confirmPanic = async () => {
     await activatePanic(message, streamRef.current);
+    setMessage(''); // Reset message for next use
     setShowConfirmation(false); // This will trigger cleanup in useEffect
   };
 
