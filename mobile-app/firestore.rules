@@ -1,33 +1,36 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // SOS Alerts - Allow mobile apps to create, admin to read/update
-    match /sos-alerts/{alertId} {
-      allow create: if request.auth != null && 
-        request.resource.data.keys().hasAll(['userId', 'message', 'videoUrl', 'location']);
-      allow read, update: if request.auth != null;
-    }
-    
-    // Analysis Logs - System only
-    match /analysis-logs/{logId} {
+    // SOS Alerts - Allow read/write for all authenticated users
+    match /sos-alerts/{document} {
       allow read, write: if request.auth != null;
     }
     
-    // Alerts - Admin only for create/update, public read
-    match /alerts/{alertId} {
-      allow read: if true;  // Public read for emergency alerts
-      allow create, update, delete: if request.auth != null;
+    // System Alerts - Allow read for all authenticated users, write for admins only
+    match /alerts/{document} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        (request.auth.token.admin == true || request.auth.uid in resource.data.admins);
     }
     
-    // Notification Logs - System only
-    match /notificationLogs/{logId} {
+    // Analysis Logs - Allow read/write for authenticated users
+    match /analysis-logs/{document} {
       allow read, write: if request.auth != null;
     }
     
-    // Users collection - Users can read/write their own data
+    // Notification Logs - Allow read/write for authenticated users
+    match /notificationLogs/{document} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Users - Allow users to read/write their own data
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Default deny all other access
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
