@@ -16,6 +16,11 @@ import { toast } from '@/components/ui/use-toast';
 
 const PanicButton = () => {
   const { isActivated, activatePanic, isProcessing, setIsProcessing } = usePanic();
+
+  // Debug state changes
+  React.useEffect(() => {
+    console.log('🔴 PanicButton state changed:', { isActivated, isProcessing });
+  }, [isActivated, isProcessing]);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [message, setMessage] = useState('');
   const videoRef = useRef(null);
