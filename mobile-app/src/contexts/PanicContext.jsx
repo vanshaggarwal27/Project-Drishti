@@ -40,7 +40,8 @@ const getDeviceInfo = () => {
 };
 
 export const PanicProvider = ({ children }) => {
-  const [isActivated, setIsActivated] = useState(false);
+  const [isActivated, setIsActivated] = useState(false); // For button feedback only
+  const [hasActiveAlerts, setHasActiveAlerts] = useState(false); // For actual alert monitoring
   const [isProcessing, setIsProcessing] = useState(false);
   const [panicHistory, setPanicHistory] = useState([]);
   const [realtimeAlerts, setRealtimeAlerts] = useState([]);
@@ -60,9 +61,9 @@ export const PanicProvider = ({ children }) => {
       setPanicHistory(localAlerts);
       setRealtimeAlerts(localAlerts);
 
-      // Check for pending/active alerts (new schema uses 'pending' for new alerts)
+      // Check for pending/active alerts (separate from button state)
       const activeAlert = localAlerts.find(alert => alert.status === 'pending' || alert.status === 'active');
-      setIsActivated(!!activeAlert);
+      setHasActiveAlerts(!!activeAlert);
     } else {
       // Set up Firebase real-time subscription
       console.log('🔄 Setting up real-time SOS alerts subscription...');
@@ -71,9 +72,9 @@ export const PanicProvider = ({ children }) => {
         setPanicHistory(alerts);
         setRealtimeAlerts(alerts);
 
-        // Check for pending/active alerts (new schema uses 'pending' for new alerts)
+        // Check for pending/active alerts (separate from button state)
         const activeAlert = alerts.find(alert => alert.status === 'pending' || alert.status === 'active');
-        setIsActivated(!!activeAlert);
+        setHasActiveAlerts(!!activeAlert);
       });
 
       return () => {
@@ -265,7 +266,7 @@ export const PanicProvider = ({ children }) => {
 
       // In development mode, don't fail completely since Firebase storage worked
       if (window.location.hostname === 'localhost' || window.location.hostname.includes('fly.dev')) {
-        console.warn('⚠️ Backend not available, but alert saved to Firebase');
+        console.warn('���️ Backend not available, but alert saved to Firebase');
         return;
       }
 
@@ -311,6 +312,7 @@ export const PanicProvider = ({ children }) => {
 
   const value = {
     isActivated,
+    hasActiveAlerts,
     isProcessing,
     setIsProcessing,
     panicHistory,
