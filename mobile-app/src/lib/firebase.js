@@ -181,16 +181,26 @@ export const createAnalysisLog = async (logData) => {
 // Notification Logs functions
 export const createNotificationLog = async (logData) => {
   try {
+    // Validate required fields
+    if (!logData.reportId) {
+      throw new Error('reportId is required for notification logs');
+    }
+
     const notificationLog = {
       reportId: logData.reportId,
-      type: logData.type,
+      type: logData.type || 'general',
       emergencyServices: logData.emergencyServices || [],
       publicRecipients: logData.publicRecipients || [],
       sentAt: serverTimestamp(),
-      status: logData.status || 'sent'
+      status: logData.status || 'sent',
+      // Add optional fields if provided
+      ...(logData.userId && { userId: logData.userId }),
+      ...(logData.message && { message: logData.message }),
+      ...(logData.metadata && { metadata: logData.metadata })
     };
 
     const docRef = await addDoc(collection(db, COLLECTIONS.NOTIFICATION_LOGS), notificationLog);
+    console.log('✅ Notification log created:', docRef.id);
     return docRef.id;
   } catch (error) {
     if (error.code === 'permission-denied') {
@@ -198,6 +208,7 @@ export const createNotificationLog = async (logData) => {
       return `local_log_${Date.now()}`;
     }
     console.error('❌ Error creating notification log:', error);
+    console.error('Failed log data:', logData);
     throw error;
   }
 };
@@ -404,7 +415,7 @@ export const uploadVideoAndGetURL = async (stream, userId) => {
   const videoDurationMs = 15000;
   const videoBlob = await recordStream(stream, videoDurationMs);
   
-  const videoFileName = `sos-videos/sos_${userId}_${Date.now()}.mp4`;
+  const videoFileName = `sos-videos/${userId}/sos_${Date.now()}.mp4`;
   const videoRef = ref(storage, videoFileName);
 
   try {

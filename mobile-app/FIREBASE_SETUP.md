@@ -1,9 +1,10 @@
 # Firebase Configuration Setup
 
 ## Issues
-You're experiencing two Firebase configuration issues:
+You're experiencing Firebase configuration issues:
 1. `CONFIGURATION_NOT_FOUND` - Firebase Authentication is not enabled
 2. `Missing or insufficient permissions` - Firestore security rules need configuration
+3. `storage/unauthorized` - Firebase Storage rules need configuration for video uploads
 
 ## Solution
 
@@ -57,11 +58,55 @@ service cloud.firestore {
 
 5. **Click "Publish"** to apply the rules
 
+### Step 3: Configure Firebase Storage Rules
+
+1. **Navigate to Storage** in Firebase Console
+2. **Go to "Rules" tab**
+3. **Replace the existing rules** with the content from `mobile-app/storage.rules`:
+
+```javascript
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow authenticated users to upload SOS videos
+    match /sos-videos/{userId}/{videoId} {
+      allow read, write: if request.auth != null &&
+                        request.auth.uid == userId;
+    }
+
+    // Allow authenticated users to upload to their user folder
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null &&
+                        request.auth.uid == userId;
+    }
+
+    // Allow authenticated users to read public resources
+    match /public/{allPaths=**} {
+      allow read: if request.auth != null;
+    }
+
+    // Emergency responders can read all SOS videos
+    match /sos-videos/{allPaths=**} {
+      allow read: if request.auth != null;
+    }
+  }
+}
+```
+
+4. **Click "Publish"** to apply the Storage rules
+
 ## What these rules do:
+
+### Firestore Rules:
 - Allow anonymous authenticated users to read/write their own user data
 - Allow authenticated users to create and manage SOS alerts
 - Allow authenticated users to create notification logs
 - Allow authenticated users to read danger alerts
+
+### Storage Rules:
+- Allow authenticated users to upload SOS videos to their own folder
+- Allow emergency responders to read all SOS videos
+- Organize videos by user ID for security and organization
 
 ## Automatic Fallback Mode
 If Firebase is not properly configured, the app automatically switches to **Local Storage Mode**:
@@ -79,9 +124,11 @@ If Firebase is not properly configured, the app automatically switches to **Loca
 
 ## After Setup
 1. **Enable Firebase Authentication** (Step 1) to fix `CONFIGURATION_NOT_FOUND` error
-2. **Configure Firestore Rules** (Step 2) to fix permission errors
-3. **Refresh your app** - Should automatically switch to Firebase mode
-4. **Re-login** to migrate data from local storage to Firebase
+2. **Configure Firestore Rules** (Step 2) to fix Firestore permission errors
+3. **Configure Storage Rules** (Step 3) to fix video upload `storage/unauthorized` errors
+4. **Refresh your app** - Should automatically switch to Firebase mode
+5. **Re-login** to migrate data from local storage to Firebase
+6. **Test SOS video upload** - Should now work without permission errors
 
 ## Troubleshooting
 - If you still see errors after setup, check the browser console for specific error messages

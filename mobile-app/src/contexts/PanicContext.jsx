@@ -146,17 +146,24 @@ export const PanicProvider = ({ children }) => {
         console.log('🚨 Creating SOS alert in Firestore...');
         alertId = await createSOSAlert(sosAlertData);
 
-        // Log notification (only for Firebase mode)
-        await createNotificationLog({
-          userId: firebaseUser.uid,
-          type: 'sos_alert_created',
-          alertId: alertId,
-          message: `SOS alert created: ${message || 'Emergency activated'}`,
-          metadata: {
-            location: currentLocation,
-            hasVideo: !!videoData.videoUrl
+        // Only log notification if SOS alert was successfully created
+        if (alertId) {
+          try {
+            await createNotificationLog({
+              reportId: alertId, // Use reportId instead of alertId to match schema
+              userId: firebaseUser.uid,
+              type: 'sos_alert_created',
+              message: `SOS alert created: ${message || 'Emergency activated'}`,
+              metadata: {
+                location: currentLocation,
+                hasVideo: !!videoData.videoUrl
+              }
+            });
+          } catch (logError) {
+            console.warn('⚠️ Failed to create notification log:', logError.message);
+            // Don't fail the entire operation if logging fails
           }
-        });
+        }
       }
 
       // Send to backend services
