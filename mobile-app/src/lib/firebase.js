@@ -109,11 +109,10 @@ export const createSOSAlert = async (alertData) => {
   }
 };
 
-export const getSOSAlerts = async (userId, limitCount = 10) => {
+export const getSOSAlerts = async (limitCount = 10) => {
   try {
     const q = query(
       collection(db, COLLECTIONS.SOS_ALERTS),
-      where('userId', '==', userId),
       orderBy('createdAt', 'desc'),
       limit(limitCount)
     );
@@ -125,13 +124,12 @@ export const getSOSAlerts = async (userId, limitCount = 10) => {
   }
 };
 
-export const subscribeToSOSAlerts = (userId, callback) => {
+export const subscribeToSOSAlerts = (callback) => {
   try {
     const q = query(
       collection(db, COLLECTIONS.SOS_ALERTS),
-      where('userId', '==', userId),
       orderBy('createdAt', 'desc'),
-      limit(20)
+      limit(50)
     );
     return onSnapshot(q, (querySnapshot) => {
       const alerts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -141,8 +139,7 @@ export const subscribeToSOSAlerts = (userId, callback) => {
         console.warn('⚠️ Firebase permission denied - using local storage fallback');
         // Use localStorage as fallback
         const localAlerts = JSON.parse(localStorage.getItem('local_sos_alerts') || '[]');
-        const userAlerts = localAlerts.filter(alert => alert.userId === userId);
-        callback(userAlerts);
+        callback(localAlerts);
         return () => {}; // Return empty unsubscribe function
       }
       console.error('❌ Error in SOS alerts subscription:', error);
@@ -152,8 +149,7 @@ export const subscribeToSOSAlerts = (userId, callback) => {
     console.error('❌ Error setting up SOS alerts subscription:', error);
     // Fallback to localStorage
     const localAlerts = JSON.parse(localStorage.getItem('local_sos_alerts') || '[]');
-    const userAlerts = localAlerts.filter(alert => alert.userId === userId);
-    callback(userAlerts);
+    callback(localAlerts);
     return () => {}; // Return empty unsubscribe function
   }
 };
