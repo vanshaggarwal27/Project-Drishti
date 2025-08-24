@@ -12,7 +12,8 @@ import {
   Users,
   Zap,
   Bell,
-  Wifi
+  Wifi,
+  Eye
 } from 'lucide-react';
 import { useDangerAlert } from '@/contexts/DangerAlertContext';
 import { usePanic } from '@/contexts/PanicContext';
@@ -181,7 +182,7 @@ const SOSAlerts = () => {
     return new Date(timestamp).toLocaleDateString();
   };
 
-  const filteredAlerts = demoAlerts.filter(alert => {
+  const filteredAlerts = (allAlerts.length > 0 ? allAlerts : legacyAlerts).filter(alert => {
     if (filter === 'all') return true;
     return alert.severity === filter || alert.status === filter;
   });
@@ -226,24 +227,6 @@ const SOSAlerts = () => {
         </motion.header>
 
         <div className="px-6 py-6 space-y-6">
-          {/* Demo Mode Notice */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-yellow-200 rounded-xl flex items-center justify-center">
-                <Eye className="w-5 h-5 text-yellow-700" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-yellow-800">Demo Mode Active</h3>
-                <p className="text-sm text-yellow-700">
-                  Showing simulated emergency alerts. In production, real emergency data would be displayed.
-                </p>
-              </div>
-            </div>
-          </motion.div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-3 gap-4">
@@ -258,7 +241,7 @@ const SOSAlerts = () => {
                   <AlertTriangle className="w-6 h-6 text-red-600" />
                 </div>
                 <div className="text-2xl font-bold text-red-700">
-                  {demoAlerts.filter(a => a.status === 'active').length}
+                  {(allAlerts.length > 0 ? allAlerts : legacyAlerts).filter(a => a.status === 'active').length}
                 </div>
                 <div className="text-xs text-gray-600">Active Alerts</div>
               </div>
@@ -275,7 +258,7 @@ const SOSAlerts = () => {
                   <CheckCircle className="w-6 h-6 text-green-600" />
                 </div>
                 <div className="text-2xl font-bold text-green-700">
-                  {demoAlerts.filter(a => a.status === 'resolved').length}
+                  {(allAlerts.length > 0 ? allAlerts : legacyAlerts).filter(a => a.status === 'resolved').length}
                 </div>
                 <div className="text-xs text-gray-600">Resolved</div>
               </div>
@@ -292,7 +275,7 @@ const SOSAlerts = () => {
                   <Eye className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="text-2xl font-bold text-blue-700">
-                  {demoAlerts.filter(a => a.status === 'monitoring').length}
+                  {(allAlerts.length > 0 ? allAlerts : legacyAlerts).filter(a => a.status === 'monitoring').length}
                 </div>
                 <div className="text-xs text-gray-600">Monitoring</div>
               </div>
