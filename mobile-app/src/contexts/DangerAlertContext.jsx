@@ -3,8 +3,8 @@ import { toast } from '@/components/ui/use-toast';
 import { useLocation } from '@/contexts/LocationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  createDangerAlert,
-  subscribeToDangerAlerts,
+  createSystemAlert,
+  subscribeToSystemAlerts,
   createNotificationLog
 } from '@/lib/firebase';
 
