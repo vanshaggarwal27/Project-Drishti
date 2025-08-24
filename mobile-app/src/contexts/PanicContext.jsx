@@ -335,7 +335,15 @@ export const PanicProvider = ({ children }) => {
     realtimeAlerts,
     activatePanic,
     deactivatePanic,
-    clearHistory
+    clearHistory,
+    resetButtonState: () => {
+      console.log('🔄 Manually resetting button state');
+      if (window.panicButtonTimeout) {
+        clearTimeout(window.panicButtonTimeout);
+        window.panicButtonTimeout = null;
+      }
+      setIsActivated(false);
+    }
   };
 
   return (
