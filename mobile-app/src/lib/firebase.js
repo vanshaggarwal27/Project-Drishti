@@ -497,6 +497,26 @@ export const uploadVideoAndGetURL = async (stream, userId) => {
     };
   } catch (error) {
     console.error("Error uploading video:", error);
+
+    // For permission errors, warn but don't fail the entire SOS alert
+    if (error.code === 'storage/unauthorized' || error.message.includes('permission')) {
+      console.warn('⚠️ Video upload failed due to permissions - SOS alert will continue without video');
+      toast({
+        title: "Video Upload Failed",
+        description: "SOS alert will be sent without video due to storage permissions. Alert functionality still works.",
+        variant: "destructive",
+        duration: 5000
+      });
+
+      // Return empty video data instead of throwing
+      return {
+        videoUrl: null,
+        videoThumbnail: null,
+        videoDuration: 0,
+      };
+    }
+
+    // For other errors, still throw
     throw new Error("Failed to upload emergency video.");
   }
 };
