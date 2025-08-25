@@ -56,7 +56,7 @@ export const PanicProvider = ({ children }) => {
 
     if (isLocalMode) {
       // Load from localStorage for local mode
-      console.log('💾 Loading SOS alerts from local storage...');
+      console.log('��� Loading SOS alerts from local storage...');
       const localAlerts = JSON.parse(localStorage.getItem('local_sos_alerts') || '[]');
       setPanicHistory(localAlerts);
       setRealtimeAlerts(localAlerts);
@@ -211,6 +211,7 @@ export const PanicProvider = ({ children }) => {
       // Log error (only for Firebase mode)
       if (firebaseUser?.uid && !isLocalMode) {
         await createNotificationLog({
+          reportId: `error_${Date.now()}`, // Dummy reportId for error cases
           userId: firebaseUser.uid,
           type: 'sos_alert_failed',
           message: `SOS alert failed: ${error.message}`,
