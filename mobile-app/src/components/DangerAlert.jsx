@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertTriangle, MapPin } from 'lucide-react';
@@ -27,13 +26,13 @@ const DangerAlert = () => {
   const getAlertColor = (severity) => {
     switch (severity) {
       case 'high':
-        return 'border-red-500 bg-red-500/20';
+        return 'border-red-400 bg-red-50';
       case 'medium':
-        return 'border-orange-500 bg-orange-500/20';
+        return 'border-orange-400 bg-orange-50';
       case 'low':
-        return 'border-yellow-500 bg-yellow-500/20';
+        return 'border-yellow-400 bg-yellow-50';
       default:
-        return 'border-red-500 bg-red-500/20';
+        return 'border-red-400 bg-red-50';
     }
   };
 
@@ -46,16 +45,16 @@ const DangerAlert = () => {
         className="fixed top-4 left-4 right-4 z-50"
       >
         <motion.div
-          className={`glass-dark rounded-2xl p-4 border-2 ${getAlertColor(activeAlert.severity)} danger-alert`}
-          animate={{ 
+          className={`bg-white/95 backdrop-blur-lg rounded-2xl p-4 border-2 ${getAlertColor(activeAlert.severity)} danger-alert shadow-xl`}
+          animate={{
             scale: [1, 1.02, 1],
             boxShadow: [
-              '0 0 0 0 rgba(239, 68, 68, 0.7)',
-              '0 0 0 10px rgba(239, 68, 68, 0)',
-              '0 0 0 0 rgba(239, 68, 68, 0.7)'
+              '0 0 0 0 rgba(251, 191, 36, 0.7)',
+              '0 0 0 10px rgba(251, 191, 36, 0)',
+              '0 0 0 0 rgba(251, 191, 36, 0.7)'
             ]
           }}
-          transition={{ 
+          transition={{
             duration: 2,
             repeat: Infinity,
             ease: "easeInOut"
@@ -68,21 +67,21 @@ const DangerAlert = () => {
               </div>
               <div className="flex-1">
                 <div className="flex items-center space-x-2 mb-1">
-                  <h3 className="text-white font-bold text-lg">
+                  <h3 className="text-gray-800 font-bold text-lg">
                     {activeAlert.title}
                   </h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     activeAlert.severity === 'high' ? 'bg-red-500 text-white' :
                     activeAlert.severity === 'medium' ? 'bg-orange-500 text-white' :
-                    'bg-yellow-500 text-black'
+                    'bg-yellow-500 text-gray-800'
                   }`}>
                     {activeAlert.severity.toUpperCase()}
                   </span>
                 </div>
-                <p className="text-white/90 text-sm mb-2">
+                <p className="text-gray-700 text-sm mb-2">
                   {activeAlert.message}
                 </p>
-                <div className="flex items-center space-x-2 text-white/70 text-xs">
+                <div className="flex items-center space-x-2 text-gray-600 text-xs">
                   <MapPin size={12} />
                   <span>Nearby • {new Date(activeAlert.timestamp).toLocaleTimeString()}</span>
                 </div>
@@ -90,11 +89,11 @@ const DangerAlert = () => {
             </div>
             <motion.button
               onClick={dismissAlert}
-              className="p-1 rounded-full hover:bg-white/20 transition-colors"
+              className="p-1 rounded-full hover:bg-gray-200 transition-colors"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
-              <X size={20} className="text-white" />
+              <X size={20} className="text-gray-600" />
             </motion.button>
           </div>
         </motion.div>
