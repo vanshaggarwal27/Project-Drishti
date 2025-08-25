@@ -109,11 +109,10 @@ export const createSOSAlert = async (alertData) => {
   }
 };
 
-export const getSOSAlerts = async (userId, limitCount = 10) => {
+export const getSOSAlerts = async (limitCount = 10) => {
   try {
     const q = query(
       collection(db, COLLECTIONS.SOS_ALERTS),
-      where('userId', '==', userId),
       orderBy('createdAt', 'desc'),
       limit(limitCount)
     );
@@ -125,13 +124,12 @@ export const getSOSAlerts = async (userId, limitCount = 10) => {
   }
 };
 
-export const subscribeToSOSAlerts = (userId, callback) => {
+export const subscribeToSOSAlerts = (callback) => {
   try {
     const q = query(
       collection(db, COLLECTIONS.SOS_ALERTS),
-      where('userId', '==', userId),
       orderBy('createdAt', 'desc'),
-      limit(20)
+      limit(50)
     );
     return onSnapshot(q, (querySnapshot) => {
       const alerts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -141,8 +139,7 @@ export const subscribeToSOSAlerts = (userId, callback) => {
         console.warn('⚠️ Firebase permission denied - using local storage fallback');
         // Use localStorage as fallback
         const localAlerts = JSON.parse(localStorage.getItem('local_sos_alerts') || '[]');
-        const userAlerts = localAlerts.filter(alert => alert.userId === userId);
-        callback(userAlerts);
+        callback(localAlerts);
         return () => {}; // Return empty unsubscribe function
       }
       console.error('❌ Error in SOS alerts subscription:', error);
@@ -152,8 +149,7 @@ export const subscribeToSOSAlerts = (userId, callback) => {
     console.error('❌ Error setting up SOS alerts subscription:', error);
     // Fallback to localStorage
     const localAlerts = JSON.parse(localStorage.getItem('local_sos_alerts') || '[]');
-    const userAlerts = localAlerts.filter(alert => alert.userId === userId);
-    callback(userAlerts);
+    callback(localAlerts);
     return () => {}; // Return empty unsubscribe function
   }
 };
@@ -273,65 +269,132 @@ export const updateSOSAlertWithAnalysis = async (alertId, analysisData) => {
 
 // System Alerts subscription
 export const subscribeToSystemAlerts = (callback) => {
-  const q = query(
-    collection(db, COLLECTIONS.ALERTS),
-    where('isActive', '==', true),
-    orderBy('createdAt', 'desc')
-  );
-  return onSnapshot(q, (querySnapshot) => {
-    const alerts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    callback(alerts);
-  });
+  try {
+    // Simplified query to avoid composite index requirement
+    const q = query(
+      collection(db, COLLECTIONS.ALERTS),
+      where('isActive', '==', true),
+      limit(50)
+    );
+    return onSnapshot(q, (querySnapshot) => {
+      const alerts = querySnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+          return bTime - aTime;
+        });
+      callback(alerts);
+    }, (error) => {
+      if (error.code === 'failed-precondition' && error.message.includes('index')) {
+        console.error('🔥 Firebase composite index required. Create it here:', error.message);
+        toast({
+          title: "Database Index Required",
+          description: "System alerts may be limited. Check console for Firebase index URL.",
+          variant: "destructive",
+          duration: 10000
+        });
+      } else {
+        console.warn('⚠️ System alerts subscription error:', error.message);
+      }
+      callback([]); // Return empty array on error
+    });
+  } catch (error) {
+    console.error('❌ Error setting up system alerts subscription:', error);
+    callback([]);
+    return () => {}; // Return empty unsubscribe function
+  }
 };
 
 // Get emergency videos (for admin dashboard)
 export const getEmergencyVideos = async (limitCount = 20) => {
   try {
+    // Simplified query to avoid composite index requirement
     const q = query(
       collection(db, COLLECTIONS.SOS_ALERTS),
       where('isEmergency', '==', true),
-      orderBy('createdAt', 'desc'),
       limit(limitCount)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const alerts = querySnapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((a, b) => {
+        const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+        const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+        return bTime - aTime;
+      });
+    return alerts;
   } catch (error) {
     console.error('❌ Error getting emergency videos:', error);
-    throw error;
+    // Return empty array on error instead of throwing
+    return [];
   }
 };
 
 // Get videos pending analysis
 export const getVideosForAnalysis = async (limitCount = 10) => {
   try {
+    // Simplified query to avoid composite index requirement
     const q = query(
       collection(db, COLLECTIONS.SOS_ALERTS),
       where('geminiAnalysis', '==', null),
-      where('videoUrl', '!=', null),
-      orderBy('createdAt', 'desc'),
-      limit(limitCount)
+      limit(limitCount * 2) // Get more to filter client-side
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const alerts = querySnapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(alert => alert.videoUrl) // Filter for videos on client-side
+      .sort((a, b) => {
+        const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+        const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+        return bTime - aTime;
+      })
+      .slice(0, limitCount); // Limit after sorting
+    return alerts;
   } catch (error) {
     console.error('❌ Error getting videos for analysis:', error);
-    throw error;
+    // Return empty array on error instead of throwing
+    return [];
   }
 };
 
 // Get videos by service type
 export const getVideosByService = async (serviceType, limitCount = 20) => {
   try {
+    // Simplified query to avoid composite index requirement
     const q = query(
       collection(db, COLLECTIONS.SOS_ALERTS),
       where('primaryService', '==', serviceType),
+      limit(limitCount)
+    );
+    const querySnapshot = await getDocs(q);
+    const alerts = querySnapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((a, b) => {
+        const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+        const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+        return bTime - aTime;
+      });
+    return alerts;
+  } catch (error) {
+    console.error('❌ Error getting videos by service type:', error);
+    // Return empty array on error instead of throwing
+    return [];
+  }
+};
+
+// Get all SOS alerts for admin dashboard (no user filtering)
+export const getAllSOSAlertsForAdmin = async (limitCount = 50) => {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.SOS_ALERTS),
       orderBy('createdAt', 'desc'),
       limit(limitCount)
     );
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
-    console.error('❌ Error getting videos by service type:', error);
+    console.error('❌ Error getting all SOS alerts for admin:', error);
     throw error;
   }
 };
@@ -415,7 +478,7 @@ export const uploadVideoAndGetURL = async (stream, userId) => {
   const videoDurationMs = 15000;
   const videoBlob = await recordStream(stream, videoDurationMs);
   
-  const videoFileName = `sos-videos/${userId}/sos_${Date.now()}.mp4`;
+  const videoFileName = `sos-videos/sos_${Date.now()}.mp4`;
   const videoRef = ref(storage, videoFileName);
 
   try {
@@ -434,6 +497,26 @@ export const uploadVideoAndGetURL = async (stream, userId) => {
     };
   } catch (error) {
     console.error("Error uploading video:", error);
+
+    // For permission errors, warn but don't fail the entire SOS alert
+    if (error.code === 'storage/unauthorized' || error.message.includes('permission')) {
+      console.warn('⚠️ Video upload failed due to permissions - SOS alert will continue without video');
+      toast({
+        title: "Video Upload Failed",
+        description: "SOS alert will be sent without video due to storage permissions. Alert functionality still works.",
+        variant: "destructive",
+        duration: 5000
+      });
+
+      // Return empty video data instead of throwing
+      return {
+        videoUrl: null,
+        videoThumbnail: null,
+        videoDuration: 0,
+      };
+    }
+
+    // For other errors, still throw
     throw new Error("Failed to upload emergency video.");
   }
 };

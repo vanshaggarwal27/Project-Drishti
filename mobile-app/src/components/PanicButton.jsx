@@ -15,14 +15,31 @@ import {
 import { toast } from '@/components/ui/use-toast';
 
 const PanicButton = () => {
-  const { isActivated, activatePanic, isProcessing, setIsProcessing } = usePanic();
+  const { isActivated, activatePanic, isProcessing, setIsProcessing, resetButtonState } = usePanic();
+
+  // Debug state changes
+  React.useEffect(() => {
+    console.log('🔴 PanicButton state changed:', { isActivated, isProcessing });
+  }, [isActivated, isProcessing]);
+
+  // Backup reset mechanism - if button is stuck in activated state for too long
+  React.useEffect(() => {
+    if (isActivated && !isProcessing) {
+      const backupTimeout = setTimeout(() => {
+        console.log('🔧 Backup reset triggered - button was stuck');
+        resetButtonState();
+      }, 5000); // Reset after 5 seconds as a backup
+
+      return () => clearTimeout(backupTimeout);
+    }
+  }, [isActivated, isProcessing, resetButtonState]);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [message, setMessage] = useState('');
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
   const handlePanicPress = () => {
-    if (isActivated || isProcessing) return;
+    if (isProcessing) return; // Only prevent during processing, allow multiple alerts
     setShowConfirmation(true);
   };
 
@@ -61,6 +78,7 @@ const PanicButton = () => {
 
   const confirmPanic = async () => {
     await activatePanic(message, streamRef.current);
+    setMessage(''); // Reset message for next use
     setShowConfirmation(false); // This will trigger cleanup in useEffect
   };
 
@@ -78,16 +96,19 @@ const PanicButton = () => {
       >
         <AnimatePresence mode="wait">
           {isActivated ? (
-            <motion.div
+            <motion.button
               key="activated"
+              onClick={handlePanicPress}
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
-              className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg border-2 border-green-400"
+              className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg border-2 border-green-400 hover:scale-105 transition-transform cursor-pointer"
               style={{ backgroundColor: 'rgba(34, 197, 94, 0.9)', backdropFilter: 'blur(10px)' }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
             >
               <Check size={24} className="text-white" />
-            </motion.div>
+            </motion.button>
           ) : (
             <motion.button
               key="panic"
@@ -116,7 +137,7 @@ const PanicButton = () => {
         >
           <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg border border-yellow-200 shadow-lg">
             <span className="text-xs text-gray-800 font-medium">
-              {isActivated ? 'Alert Sent!' : isProcessing ? 'Starting...' : 'SOS'}
+              {isActivated ? 'Sent! Ready for next' : isProcessing ? 'Starting...' : 'SOS'}
             </span>
           </div>
         </motion.div>

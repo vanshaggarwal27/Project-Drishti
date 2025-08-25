@@ -40,7 +40,8 @@ const getDeviceInfo = () => {
 };
 
 export const PanicProvider = ({ children }) => {
-  const [isActivated, setIsActivated] = useState(false);
+  const [isActivated, setIsActivated] = useState(false); // For button feedback only
+  const [hasActiveAlerts, setHasActiveAlerts] = useState(false); // For actual alert monitoring
   const [isProcessing, setIsProcessing] = useState(false);
   const [panicHistory, setPanicHistory] = useState([]);
   const [realtimeAlerts, setRealtimeAlerts] = useState([]);
@@ -55,26 +56,25 @@ export const PanicProvider = ({ children }) => {
 
     if (isLocalMode) {
       // Load from localStorage for local mode
-      console.log('💾 Loading SOS alerts from local storage...');
+      console.log('��� Loading SOS alerts from local storage...');
       const localAlerts = JSON.parse(localStorage.getItem('local_sos_alerts') || '[]');
-      const userAlerts = localAlerts.filter(alert => alert.userId === firebaseUser.uid);
-      setPanicHistory(userAlerts);
-      setRealtimeAlerts(userAlerts);
+      setPanicHistory(localAlerts);
+      setRealtimeAlerts(localAlerts);
 
-      // Check for pending/active alerts (new schema uses 'pending' for new alerts)
-      const activeAlert = userAlerts.find(alert => alert.status === 'pending' || alert.status === 'active');
-      setIsActivated(!!activeAlert);
+      // Check for pending/active alerts (separate from button state)
+      const activeAlert = localAlerts.find(alert => alert.status === 'pending' || alert.status === 'active');
+      setHasActiveAlerts(!!activeAlert);
     } else {
       // Set up Firebase real-time subscription
       console.log('🔄 Setting up real-time SOS alerts subscription...');
-      const unsubscribe = subscribeToSOSAlerts(firebaseUser.uid, (alerts) => {
+      const unsubscribe = subscribeToSOSAlerts((alerts) => {
         console.log('🚨 Received real-time SOS alerts:', alerts.length);
         setPanicHistory(alerts);
         setRealtimeAlerts(alerts);
 
-        // Check for pending/active alerts (new schema uses 'pending' for new alerts)
+        // Check for pending/active alerts (separate from button state)
         const activeAlert = alerts.find(alert => alert.status === 'pending' || alert.status === 'active');
-        setIsActivated(!!activeAlert);
+        setHasActiveAlerts(!!activeAlert);
       });
 
       return () => {
@@ -97,6 +97,12 @@ export const PanicProvider = ({ children }) => {
 
     const isLocalMode = userProfile.isLocalUser || firebaseUser.uid.startsWith('local_');
 
+    // Clear any existing timeout before starting new process
+    if (window.panicButtonTimeout) {
+      clearTimeout(window.panicButtonTimeout);
+      window.panicButtonTimeout = null;
+    }
+
     setIsProcessing(true);
     try {
       // Get current location
@@ -106,11 +112,22 @@ export const PanicProvider = ({ children }) => {
         currentLocation = await getCurrentLocation();
       }
 
-      // Upload video to Firebase Storage
+      // Upload video to Firebase Storage (optional - don't fail if it doesn't work)
       let videoData = { videoUrl: null, videoThumbnail: null, videoDuration: 0 };
       if (stream) {
-        toast({ title: "Uploading Video...", description: "Your emergency video is being securely uploaded to Firebase..." });
-        videoData = await uploadVideoAndGetURL(stream, firebaseUser.uid);
+        try {
+          toast({ title: "Uploading Video...", description: "Your emergency video is being securely uploaded to Firebase..." });
+          videoData = await uploadVideoAndGetURL(stream, firebaseUser.uid);
+          console.log('✅ Video uploaded successfully');
+        } catch (videoError) {
+          console.warn('⚠️ Video upload failed, continuing with SOS alert without video:', videoError.message);
+          toast({
+            title: "Video Upload Failed",
+            description: "SOS alert will be sent without video. Emergency services will still be notified.",
+            duration: 5000
+          });
+          // Continue with empty video data
+        }
       }
 
       const deviceInfo = getDeviceInfo();
@@ -174,28 +191,32 @@ export const PanicProvider = ({ children }) => {
 
       setIsActivated(true);
 
+      const hasVideo = !!videoData.videoUrl;
+
       if (isLocalMode) {
         toast({
           title: "🚨 SOS Alert Created!",
-          description: "Your emergency alert has been saved locally. Configure Firebase for real-time sync.",
-          duration: 8000,
+          description: `Emergency alert saved locally${hasVideo ? ' with video' : ' (no video)'}. Ready to send another if needed.`,
+          duration: 5000,
         });
-        console.log('✅ SOS Alert successfully created locally:', alertId);
+        console.log('✅ SOS Alert successfully created locally:', alertId, hasVideo ? 'with video' : 'without video');
       } else {
         toast({
           title: "🚨 SOS Alert Sent!",
-          description: "Your emergency alert has been saved to Firebase and emergency services notified.",
-          duration: 8000,
+          description: `Emergency alert sent successfully${hasVideo ? ' with video' : ' (no video)'}. You can send another alert if needed.`,
+          duration: 5000,
         });
-        console.log('✅ SOS Alert successfully created in Firestore:', alertId);
+        console.log('✅ SOS Alert successfully created in Firestore:', alertId, hasVideo ? 'with video' : 'without video');
       }
 
-      // Auto-deactivate after 30 seconds (can be manually deactivated)
-      setTimeout(() => {
-        if (isActivated) {
-          setIsActivated(false);
-        }
-      }, 30000);
+      // Auto-reset button state after 2 seconds to allow sending multiple alerts quickly
+      const resetTimeout = setTimeout(() => {
+        console.log('🔄 Resetting button state to allow next alert');
+        setIsActivated(false);
+      }, 2000);
+
+      // Store the timeout so it can be cleared if needed
+      window.panicButtonTimeout = resetTimeout;
 
     } catch (error) {
       console.error("❌ Panic Activation Error:", error);
@@ -203,6 +224,7 @@ export const PanicProvider = ({ children }) => {
       // Log error (only for Firebase mode)
       if (firebaseUser?.uid && !isLocalMode) {
         await createNotificationLog({
+          reportId: `error_${Date.now()}`, // Dummy reportId for error cases
           userId: firebaseUser.uid,
           type: 'sos_alert_failed',
           message: `SOS alert failed: ${error.message}`,
@@ -277,7 +299,13 @@ export const PanicProvider = ({ children }) => {
   };
 
   const deactivatePanic = () => {
+    // Clear any pending timeout
+    if (window.panicButtonTimeout) {
+      clearTimeout(window.panicButtonTimeout);
+      window.panicButtonTimeout = null;
+    }
     setIsActivated(false);
+    console.log('🔄 Button manually deactivated');
   };
 
   const clearHistory = async () => {
@@ -291,6 +319,7 @@ export const PanicProvider = ({ children }) => {
 
       // Log the action
       await createNotificationLog({
+        reportId: `history_clear_${Date.now()}`, // Dummy reportId for non-SOS actions
         userId: firebaseUser.uid,
         type: 'history_cleared',
         message: 'User cleared SOS alert history from local view'
@@ -312,16 +341,41 @@ export const PanicProvider = ({ children }) => {
     }
   };
 
+  const resetButtonState = () => {
+    console.log('🔄 Manually resetting button state');
+    if (window.panicButtonTimeout) {
+      clearTimeout(window.panicButtonTimeout);
+      window.panicButtonTimeout = null;
+    }
+    setIsActivated(false);
+  };
+
   const value = {
     isActivated,
+    hasActiveAlerts,
     isProcessing,
     setIsProcessing,
     panicHistory,
     realtimeAlerts,
     activatePanic,
     deactivatePanic,
-    clearHistory
+    clearHistory,
+    resetButtonState
   };
+
+  // Global debug function for testing
+  React.useEffect(() => {
+    window.debugSOSButton = () => {
+      console.log('🐛 SOS Button Debug Info:', {
+        isActivated,
+        hasActiveAlerts,
+        isProcessing,
+        panicHistoryCount: panicHistory.length,
+        timeoutExists: !!window.panicButtonTimeout
+      });
+    };
+    window.resetSOSButton = resetButtonState;
+  }, [isActivated, hasActiveAlerts, isProcessing, panicHistory.length]);
 
   return (
     <PanicContext.Provider value={value}>
