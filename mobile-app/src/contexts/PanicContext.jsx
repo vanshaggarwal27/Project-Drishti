@@ -191,20 +191,22 @@ export const PanicProvider = ({ children }) => {
 
       setIsActivated(true);
 
+      const hasVideo = !!videoData.videoUrl;
+
       if (isLocalMode) {
         toast({
           title: "🚨 SOS Alert Created!",
-          description: "Your emergency alert has been saved locally. Ready to send another if needed.",
+          description: `Emergency alert saved locally${hasVideo ? ' with video' : ' (no video)'}. Ready to send another if needed.`,
           duration: 5000,
         });
-        console.log('✅ SOS Alert successfully created locally:', alertId);
+        console.log('✅ SOS Alert successfully created locally:', alertId, hasVideo ? 'with video' : 'without video');
       } else {
         toast({
           title: "🚨 SOS Alert Sent!",
-          description: "Emergency alert sent successfully. You can send another alert if needed.",
+          description: `Emergency alert sent successfully${hasVideo ? ' with video' : ' (no video)'}. You can send another alert if needed.`,
           duration: 5000,
         });
-        console.log('✅ SOS Alert successfully created in Firestore:', alertId);
+        console.log('✅ SOS Alert successfully created in Firestore:', alertId, hasVideo ? 'with video' : 'without video');
       }
 
       // Auto-reset button state after 2 seconds to allow sending multiple alerts quickly
