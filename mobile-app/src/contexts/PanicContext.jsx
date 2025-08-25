@@ -306,6 +306,7 @@ export const PanicProvider = ({ children }) => {
 
       // Log the action
       await createNotificationLog({
+        reportId: `history_clear_${Date.now()}`, // Dummy reportId for non-SOS actions
         userId: firebaseUser.uid,
         type: 'history_cleared',
         message: 'User cleared SOS alert history from local view'
