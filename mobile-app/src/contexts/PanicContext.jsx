@@ -112,11 +112,22 @@ export const PanicProvider = ({ children }) => {
         currentLocation = await getCurrentLocation();
       }
 
-      // Upload video to Firebase Storage
+      // Upload video to Firebase Storage (optional - don't fail if it doesn't work)
       let videoData = { videoUrl: null, videoThumbnail: null, videoDuration: 0 };
       if (stream) {
-        toast({ title: "Uploading Video...", description: "Your emergency video is being securely uploaded to Firebase..." });
-        videoData = await uploadVideoAndGetURL(stream, firebaseUser.uid);
+        try {
+          toast({ title: "Uploading Video...", description: "Your emergency video is being securely uploaded to Firebase..." });
+          videoData = await uploadVideoAndGetURL(stream, firebaseUser.uid);
+          console.log('✅ Video uploaded successfully');
+        } catch (videoError) {
+          console.warn('⚠️ Video upload failed, continuing with SOS alert without video:', videoError.message);
+          toast({
+            title: "Video Upload Failed",
+            description: "SOS alert will be sent without video. Emergency services will still be notified.",
+            duration: 5000
+          });
+          // Continue with empty video data
+        }
       }
 
       const deviceInfo = getDeviceInfo();
