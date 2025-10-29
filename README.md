@@ -1,4 +1,4 @@
-# 🚨 SafeGuard - AI-Powered Crowd Safety & Emergency Response System
+# 🚨 Drishti - AI-Powered Crowd Safety & Emergency Response System
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 [![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=flat&logo=firebase&logoColor=black)](https://firebase.google.com/)
